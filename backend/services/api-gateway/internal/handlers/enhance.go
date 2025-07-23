@@ -107,12 +107,21 @@ func EnhancePrompt(clients *services.ServiceClients) gin.HandlerFunc {
 		}
 
 		// Step 3: Generate enhanced prompt
+		// Ensure context includes enhanced flag
+		generationContext := make(map[string]interface{})
+		if req.Context != nil {
+			for k, v := range req.Context {
+				generationContext[k] = v
+			}
+		}
+		generationContext["enhanced"] = true // Critical: This flag enables enhancement
+		
 		generationRequest := models.PromptGenerationRequest{
 			Text:       req.Text,
 			Intent:     intentResult.Intent,
 			Complexity: intentResult.Complexity,
 			Techniques: techniques,
-			Context:    req.Context,
+			Context:    generationContext,
 		}
 
 		enhancedPrompt, err := clients.PromptGenerator.GeneratePrompt(c.Request.Context(), generationRequest)
