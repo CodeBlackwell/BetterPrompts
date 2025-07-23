@@ -25,6 +25,7 @@ type ServiceClients struct {
 	PromptGenerator      *PromptGeneratorClient
 	Database             *DatabaseService
 	Cache                *CacheService
+	HTTPClient           *http.Client
 	IntentClassifierURL  string
 	TechniqueSelectorURL string
 	PromptGeneratorURL   string
@@ -33,6 +34,16 @@ type ServiceClients struct {
 // InitializeClients initializes all service clients
 func InitializeClients(logger *logrus.Logger) (*ServiceClients, error) {
 	clients := &ServiceClients{}
+
+	// Initialize shared HTTP client with sensible defaults
+	clients.HTTPClient = &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 10,
+			IdleConnTimeout:     90 * time.Second,
+		},
+	}
 
 	// Initialize database
 	dbURL := os.Getenv("DATABASE_URL")

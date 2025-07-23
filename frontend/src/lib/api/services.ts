@@ -2,14 +2,18 @@ import { apiClient } from './client'
 
 // Types
 export interface LoginRequest {
-  email: string
+  email_or_username: string
   password: string
+  remember_me?: boolean
 }
 
 export interface RegisterRequest {
-  name: string
   email: string
+  username: string
   password: string
+  confirm_password: string
+  first_name?: string
+  last_name?: string
 }
 
 export interface RefreshTokenRequest {
@@ -19,11 +23,17 @@ export interface RefreshTokenRequest {
 export interface AuthResponse {
   access_token: string
   refresh_token: string
+  expires_in: number
   user: {
     id: string
-    name: string
     email: string
-    role: string
+    username?: string
+    full_name?: string
+    first_name?: string
+    last_name?: string
+    roles?: string[]
+    created_at?: string
+    updated_at?: string
   }
 }
 
@@ -69,13 +79,21 @@ export interface Technique {
 
 export interface PromptHistoryItem {
   id: string
-  original_text: string
-  enhanced_text: string
-  techniques_used: string[]
+  user_id: string
+  original_input: string
+  enhanced_output: string
   intent: string
   complexity: string
-  created_at: string
+  techniques_used: string[]
+  technique_scores?: Record<string, number>
+  processing_time_ms: number
+  token_count: number
+  feedback_score?: number
+  feedback_text?: string
+  is_favorite: boolean
   metadata?: Record<string, any>
+  created_at: string
+  updated_at?: string
 }
 
 export interface FeedbackRequest {
@@ -133,14 +151,20 @@ export const promptService = {
 
 // History Services
 export const historyService = {
-  getHistory: (params?: { limit?: number; offset?: number; search?: string }) => 
-    apiClient.get<{ items: PromptHistoryItem[]; total: number }>('/history', { params }),
+  getHistory: (params?: { page?: number; limit?: number; search?: string; filter?: string }) => 
+    apiClient.get<PromptHistoryItem[]>('/history', { params }),
   
   getHistoryItem: (id: string) => 
     apiClient.get<PromptHistoryItem>(`/history/${id}`),
   
   deleteHistoryItem: (id: string) => 
     apiClient.delete(`/history/${id}`),
+  
+  toggleFavorite: (id: string) => 
+    apiClient.put(`/history/${id}/favorite`),
+  
+  updateFeedback: (id: string, data: { rating: number; feedback?: string }) =>
+    apiClient.put(`/history/${id}/feedback`, data),
 }
 
 // Feedback Service

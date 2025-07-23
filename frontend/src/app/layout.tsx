@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import AccessibilityProvider from "@/components/providers/AccessibilityProvider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
 
-// Force dynamic rendering for all pages
-export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
-export const runtime = 'nodejs';
-export const preferredRegion = 'auto';
+// Lazy load non-critical components
+const Footer = dynamic(() => import("@/components/layout/Footer"), {
+  ssr: true,
+});
+
+const AccessibilityProvider = dynamic(
+  () => import("@/components/providers/AccessibilityProvider"),
+  { ssr: true }
+);
+
+const Toaster = dynamic(
+  () => import("@/components/ui/toaster").then((mod) => ({ default: mod.Toaster })),
+  { ssr: false }
+);
 
 export const metadata: Metadata = {
   title: "BetterPrompts - AI Prompt Engineering Made Simple",

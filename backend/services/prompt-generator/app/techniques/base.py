@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List, Type
+from typing import Dict, Any, Optional, List, Type, Tuple
 import re
+import time
+import asyncio
+from datetime import datetime
 from jinja2 import Template, Environment, meta
 import structlog
 
@@ -19,6 +22,11 @@ class BaseTechnique(ABC):
         self.enabled = config.get("enabled", True)
         self.logger = logger.bind(technique=self.name)
         
+        # Effectiveness tracking
+        self._effectiveness_tracker = None
+        self._enable_tracking = config.get("enable_tracking", True)
+        self._last_application_metrics = None
+        
     @abstractmethod
     def apply(self, text: str, context: Optional[Dict[str, Any]] = None) -> str:
         """Apply the technique to the input text"""
@@ -28,6 +36,118 @@ class BaseTechnique(ABC):
     def validate_input(self, text: str, context: Optional[Dict[str, Any]] = None) -> bool:
         """Validate if the technique can be applied to the input"""
         pass
+    
+    def apply_with_tracking(self, text: str, context: Optional[Dict[str, Any]] = None) -> Tuple[str, Optional[str]]:
+        """Apply technique with effectiveness tracking
+        
+        Returns:
+            Tuple of (result, tracking_id)
+        """
+        if not self._enable_tracking or not self._effectiveness_tracker:
+            result = self.apply(text, context)
+            return result, None
+        
+        # Start timing
+        start_time = datetime.utcnow()
+        start_perf = time.perf_counter()
+        
+        # Count tokens before
+        tokens_before = self.estimate_tokens(text)
+        
+        # Initialize tracking context
+        tracking_context = {
+            "technique_id": self.name,
+            "input_text": text,
+            "start_time": start_time,
+            "tokens_before": tokens_before,
+            "session_id": context.get("session_id", "unknown") if context else "unknown",
+            "user_id": context.get("user_id") if context else None,
+            "intent_type": context.get("intent", {}).get("type") if context else None,
+            "complexity_level": context.get("complexity") if context else None,
+            "domain": context.get("domain") if context else None,
+            "target_model": context.get("target_model") if context else None,
+            "metadata": {}
+        }
+        
+        success = True
+        error_message = None
+        retry_count = 0
+        result = text
+        
+        try:
+            # Apply the technique
+            result = self.apply(text, context)
+            
+        except Exception as e:
+            success = False
+            error_message = str(e)
+            self.logger.error("Error applying technique", error=error_message)
+            
+        finally:
+            # End timing
+            end_time = datetime.utcnow()
+            end_perf = time.perf_counter()
+            
+            # Count tokens after
+            tokens_after = self.estimate_tokens(result)
+            
+            # Update tracking context
+            tracking_context.update({
+                "output_text": result,
+                "end_time": end_time,
+                "tokens_after": tokens_after,
+                "success": success,
+                "error_message": error_message,
+                "retry_count": retry_count
+            })
+            
+            # Store metrics for later access
+            self._last_application_metrics = {
+                "application_time_ms": (end_perf - start_perf) * 1000,
+                "tokens_before": tokens_before,
+                "tokens_after": tokens_after,
+                "token_increase_ratio": tokens_after / max(tokens_before, 1),
+                "success": success
+            }
+            
+            # Track asynchronously if possible
+            tracking_id = None
+            if hasattr(self._effectiveness_tracker, 'track_application'):
+                try:
+                    # Create metrics context
+                    from ..models.effectiveness import MetricsCollectionContext
+                    metrics_context = MetricsCollectionContext(**tracking_context)
+                    
+                    # Track application
+                    if asyncio.iscoroutinefunction(self._effectiveness_tracker.track_application):
+                        # Handle async tracking
+                        loop = asyncio.get_event_loop()
+                        if loop.is_running():
+                            # Schedule for later execution
+                            task = asyncio.create_task(
+                                self._effectiveness_tracker.track_application(metrics_context)
+                            )
+                        else:
+                            # Run synchronously
+                            tracking_id = loop.run_until_complete(
+                                self._effectiveness_tracker.track_application(metrics_context)
+                            )
+                    else:
+                        # Synchronous tracking
+                        tracking_id = self._effectiveness_tracker.track_application(metrics_context)
+                        
+                except Exception as e:
+                    self.logger.error("Error tracking technique application", error=str(e))
+            
+            return result, tracking_id
+    
+    def set_effectiveness_tracker(self, tracker):
+        """Set the effectiveness tracker instance"""
+        self._effectiveness_tracker = tracker
+    
+    def get_last_application_metrics(self) -> Optional[Dict[str, Any]]:
+        """Get metrics from the last application"""
+        return self._last_application_metrics
     
     def render_template(self, template: str, variables: Dict[str, Any]) -> str:
         """Render a Jinja2 template with given variables"""

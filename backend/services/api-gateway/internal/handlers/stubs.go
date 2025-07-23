@@ -20,11 +20,8 @@ func SelectTechniques(clients *services.ServiceClients) gin.HandlerFunc {
 	}
 }
 
-func SubmitFeedback(clients *services.ServiceClients) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "feedback received"})
-	}
-}
+// SubmitFeedback is now implemented in feedback.go
+// Use NewFeedbackHandler(clients, logger).SubmitFeedback instead
 
 func GetUsers(clients *services.ServiceClients) gin.HandlerFunc {
 	return func(c *gin.Context) {

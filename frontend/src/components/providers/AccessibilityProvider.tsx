@@ -1,34 +1,60 @@
 'use client'
 
-import { ReactNode } from 'react'
-import { 
-  useRouteAnnouncer, 
-  useSkipToContent, 
-  useReducedMotion, 
-  useKeyboardNavigation 
-} from '@/hooks/useAccessibility'
+import React from 'react'
+import { SkipToContent } from '@/components/ui/accessibility'
 
-interface AccessibilityProviderProps {
-  children: ReactNode
-}
+export default function AccessibilityProvider({ children }: { children: React.ReactNode }) {
+  // Manage focus for route changes
+  React.useEffect(() => {
+    const handleRouteChange = () => {
+      // Focus main content on route change for screen readers
+      const mainContent = document.getElementById('main-content')
+      if (mainContent) {
+        mainContent.focus()
+        mainContent.scrollIntoView()
+      }
+    }
 
-export default function AccessibilityProvider({ children }: AccessibilityProviderProps) {
-  // Initialize all accessibility features
-  useRouteAnnouncer()
-  useSkipToContent()
-  useReducedMotion()
-  useKeyboardNavigation()
+    // Listen for route changes
+    window.addEventListener('popstate', handleRouteChange)
+    return () => window.removeEventListener('popstate', handleRouteChange)
+  }, [])
+
+  // Add high contrast mode support
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-contrast: high)')
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      document.documentElement.classList.toggle('high-contrast', e.matches)
+    }
+
+    // Set initial state
+    document.documentElement.classList.toggle('high-contrast', mediaQuery.matches)
+
+    // Listen for changes
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  // Add reduced motion support
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      document.documentElement.classList.toggle('reduce-motion', e.matches)
+    }
+
+    // Set initial state
+    document.documentElement.classList.toggle('reduce-motion', mediaQuery.matches)
+
+    // Listen for changes
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   return (
     <>
-      {/* Skip to content link */}
-      <a
-        id="skip-to-content"
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
-        Skip to main content
-      </a>
+      <SkipToContent />
       {children}
     </>
   )

@@ -124,8 +124,19 @@ class PromptGenerationEngine:
     def __init__(self):
         self.validator = PromptValidator()
         self.logger = logger.bind(component="engine")
+        self._effectiveness_tracker = None
         self._initialize_techniques()
         
+    def set_effectiveness_tracker(self, tracker):
+        """Set the effectiveness tracker instance"""
+        self._effectiveness_tracker = tracker
+        
+        # Set tracker on all technique instances
+        for technique_id in technique_registry._instances:
+            technique = technique_registry.get_instance(technique_id)
+            if technique and hasattr(technique, 'set_effectiveness_tracker'):
+                technique.set_effectiveness_tracker(tracker)
+                
     def _initialize_techniques(self):
         """Initialize all available techniques"""
         # Import technique classes
@@ -165,6 +176,12 @@ class PromptGenerationEngine:
             config = self._load_technique_config(technique_type.value)
             technique_registry.register(technique_type.value, technique_class)
             technique_registry.create_instance(technique_type.value, config)
+            
+            # Set effectiveness tracker if available
+            if self._effectiveness_tracker:
+                technique = technique_registry.get_instance(technique_type.value)
+                if technique and hasattr(technique, 'set_effectiveness_tracker'):
+                    technique.set_effectiveness_tracker(self._effectiveness_tracker)
             
         self.logger.info(f"Initialized {len(technique_classes)} techniques")
         
@@ -423,13 +440,21 @@ class PromptGenerationEngine:
             self.logger.warning(f"Input validation failed for technique: {technique_id}")
             return text, {"skipped": True, "reason": "validation_failed"}
             
-        # Apply technique
-        result = technique.apply(text, context)
+        # Apply technique with tracking if available
+        tracking_id = None
+        if hasattr(technique, 'apply_with_tracking'):
+            result, tracking_id = technique.apply_with_tracking(text, context)
+        else:
+            result = technique.apply(text, context)
         
         # Extract metadata if the technique provides it
         metadata = {}
         if hasattr(technique, 'get_application_metadata'):
             metadata = technique.get_application_metadata()
+        
+        # Add tracking ID if available
+        if tracking_id:
+            metadata['tracking_id'] = tracking_id
         
         # Extract context updates for subsequent techniques
         context_updates = {}

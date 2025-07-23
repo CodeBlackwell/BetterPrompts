@@ -68,8 +68,12 @@ class ApiClient {
   }
 
   private getAuthToken(): string | null {
-    // In a real app, this would get the token from secure storage
-    return localStorage.getItem('auth_token')
+    // Try to get token from Zustand store first
+    const storeToken = useUserStore.getState().accessToken
+    if (storeToken) return storeToken
+    
+    // Fallback to localStorage
+    return localStorage.getItem('access_token')
   }
 
   private formatError(error: AxiosError): ApiError {

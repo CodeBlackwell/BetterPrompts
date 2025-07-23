@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Search, Filter, Trash2, ChevronLeft, ChevronRight, Copy, ExternalLink } from 'lucide-react'
+import { Search, Filter, Trash2, ChevronLeft, ChevronRight, Copy, ExternalLink, Eye } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function HistoryPage() {
+  const router = useRouter()
   const [history, setHistory] = useState<PromptHistoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -206,7 +208,15 @@ export default function HistoryPage() {
       ) : (
         <div className="space-y-4">
           {history.map((item) => (
-            <Card key={item.id} className="relative">
+            <Card 
+              key={item.id} 
+              className="relative hover:bg-accent/50 transition-colors cursor-pointer"
+              onClick={(e) => {
+                // Don't navigate if clicking on a button
+                if ((e.target as HTMLElement).closest('button')) return
+                router.push(`/history/${item.id}`)
+              }}
+            >
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -218,6 +228,14 @@ export default function HistoryPage() {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => router.push(`/history/${item.id}`)}
+                      title="View details"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

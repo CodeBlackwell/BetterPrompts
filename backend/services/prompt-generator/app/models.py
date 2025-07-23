@@ -165,3 +165,59 @@ class TechniqueExample(BaseModel):
     effectiveness_score: float = Field(..., ge=0.0, le=1.0)
     use_case: str
     tags: List[str] = Field(default_factory=list)
+
+
+class FeedbackRequest(BaseModel):
+    """Request model for submitting feedback"""
+    prompt_history_id: str = Field(..., description="ID of the prompt history entry")
+    rating: Optional[int] = Field(None, ge=1, le=5, description="Overall rating (1-5)")
+    feedback_type: Optional[str] = Field(default="rating", pattern="^(rating|positive|negative|suggestion|bug_report)$")
+    feedback_text: Optional[str] = Field(None, max_length=1000, description="Detailed feedback text")
+    technique_ratings: Optional[Dict[str, int]] = Field(None, description="Individual technique ratings")
+    most_helpful_technique: Optional[str] = Field(None, description="Most helpful technique")
+    least_helpful_technique: Optional[str] = Field(None, description="Least helpful technique")
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    
+    @validator('technique_ratings')
+    def validate_technique_ratings(cls, v):
+        if v:
+            for technique, rating in v.items():
+                if not 1 <= rating <= 5:
+                    raise ValueError(f"Rating for {technique} must be between 1 and 5")
+        return v
+
+
+class FeedbackResponse(BaseModel):
+    """Response model for feedback submission"""
+    id: str
+    prompt_history_id: str
+    rating: Optional[int]
+    feedback_type: str
+    created_at: datetime
+    message: str = "Thank you for your feedback!"
+    
+    class Config:
+        populate_by_name = True
+
+
+class TechniqueEffectivenessRequest(BaseModel):
+    """Request model for technique effectiveness query"""
+    technique: str = Field(..., description="Technique to analyze")
+    intent: Optional[str] = Field(None, description="Filter by intent")
+    complexity: Optional[str] = Field(None, description="Filter by complexity")
+    period_days: int = Field(default=30, ge=1, le=365, description="Analysis period in days")
+
+
+class TechniqueEffectivenessResponse(BaseModel):
+    """Response model for technique effectiveness"""
+    technique: str
+    intent: Optional[str]
+    complexity: Optional[str]
+    effectiveness_score: Optional[float]
+    average_rating: Optional[float]
+    positive_ratio: Optional[float]
+    negative_ratio: Optional[float]
+    confidence: str = Field(..., pattern="^(low|medium|high)$")
+    sample_size: int
+    period_days: int
+    last_updated: datetime = Field(default_factory=datetime.utcnow)

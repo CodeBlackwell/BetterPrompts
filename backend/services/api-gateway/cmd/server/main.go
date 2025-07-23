@@ -55,6 +55,9 @@ func main() {
 
 	// Initialize auth handler
 	authHandler := handlers.NewAuthHandler(userService, jwtManager, clients.Cache, logger)
+	
+	// Initialize feedback handler
+	feedbackHandler := handlers.NewFeedbackHandler(clients, logger.WithField("component", "feedback"))
 
 	// Setup Gin router
 	router := gin.New()
@@ -111,8 +114,10 @@ func main() {
 		protected.GET("/techniques", handlers.GetAvailableTechniques(clients))
 		protected.POST("/techniques/select", handlers.SelectTechniques(clients))
 		
-		// Feedback endpoint
-		protected.POST("/feedback", handlers.SubmitFeedback(clients))
+		// Feedback endpoints
+		protected.POST("/feedback", feedbackHandler.SubmitFeedback)
+		protected.GET("/feedback/:prompt_history_id", feedbackHandler.GetFeedback)
+		protected.POST("/feedback/effectiveness", feedbackHandler.GetTechniqueEffectiveness)
 	}
 
 	// Admin routes

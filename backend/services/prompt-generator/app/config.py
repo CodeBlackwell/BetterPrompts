@@ -74,6 +74,22 @@ class Settings(BaseSettings):
     enable_validation: bool = Field(default=True, env="ENABLE_VALIDATION")
     enable_async_processing: bool = Field(default=True, env="ENABLE_ASYNC_PROCESSING")
     
+    # Effectiveness tracking
+    effectiveness_tracking_enabled: bool = Field(default=True, env="EFFECTIVENESS_TRACKING_ENABLED")
+    effectiveness_sample_rate: float = Field(default=1.0, env="EFFECTIVENESS_SAMPLE_RATE")
+    effectiveness_retention_days: int = Field(default=90, env="EFFECTIVENESS_RETENTION_DAYS")
+    effectiveness_async_processing: bool = Field(default=True, env="EFFECTIVENESS_ASYNC_PROCESSING")
+    
+    # JWT settings
+    jwt_secret_key: str = Field(default="change-me-in-production", env="JWT_SECRET_KEY")
+    jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
+    jwt_expiration_minutes: int = Field(default=30, env="JWT_EXPIRATION_MINUTES")
+    
+    # Redis settings for effectiveness tracking
+    redis_host: str = Field(default="redis", env="REDIS_HOST")
+    redis_port: int = Field(default=6379, env="REDIS_PORT")
+    redis_db: int = Field(default=0, env="REDIS_DB")
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

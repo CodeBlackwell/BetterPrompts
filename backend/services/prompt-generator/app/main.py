@@ -20,6 +20,10 @@ from .models import (
 )
 from .engine import PromptGenerationEngine
 from .health import health_router
+from .routers.feedback import router as feedback_router
+from .routers.effectiveness import router as effectiveness_router
+from .database import init_db
+from .dependencies import get_effectiveness_tracker
 
 # Configure structured logging
 structlog.configure(
@@ -71,14 +75,30 @@ async def lifespan(app: FastAPI):
         environment=settings.debug and "development" or "production"
     )
     
+    # Initialize database
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+    
+    # Initialize effectiveness tracker
+    effectiveness_tracker = get_effectiveness_tracker()
+    await effectiveness_tracker.start()
+    app.state.effectiveness_tracker = effectiveness_tracker
+    logger.info("Effectiveness tracker initialized")
+    
     # Initialize engine
     app.state.engine = PromptGenerationEngine()
+    # Set effectiveness tracker on engine
+    app.state.engine.set_effectiveness_tracker(effectiveness_tracker)
     logger.info("Prompt generation engine initialized")
     
     yield
     
     # Shutdown
     logger.info("Shutting down Prompt Generation Service")
+    await effectiveness_tracker.stop()
 
 
 # Create FastAPI app
@@ -148,6 +168,8 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # Include routers
 app.include_router(health_router, prefix="/health", tags=["health"])
+app.include_router(feedback_router, prefix="/api/v1", tags=["feedback"])
+app.include_router(effectiveness_router, prefix="/api/v1", tags=["effectiveness"])
 
 
 # Main endpoints

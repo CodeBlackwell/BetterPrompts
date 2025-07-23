@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, ChevronDown, AlertCircle, WifiOff, X } from 'lucide-react'
+import { Send, Sparkles, ChevronDown, AlertCircle, WifiOff, X, RefreshCw } from 'lucide-react'
 import TechniqueCard from './TechniqueCard'
 import TechniqueCardSkeleton from './TechniqueCardSkeleton'
 import StreamingProgress, { ENHANCEMENT_STEPS, StreamingStep } from './StreamingProgress'
@@ -11,6 +11,10 @@ import { useEnhance, useTechniques } from '@/hooks/useEnhance'
 import { useApiStatus } from '@/hooks/useApiStatus'
 import { useEnhanceStore } from '@/store/useEnhanceStore'
 import { Technique } from '@/lib/api/enhance'
+import { ErrorState, NetworkError } from '@/components/ui/error-states'
+import { PageLoader, Skeleton } from '@/components/ui/loading-states'
+import { KeyboardIndicator, LiveRegion } from '@/components/ui/accessibility'
+import { FeedbackButton, QuickFeedback } from '@/components/feedback/FeedbackButton'
 
 interface EnhancementFlowProps {
   className?: string
@@ -22,6 +26,8 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
   const [selectedTechnique, setSelectedTechnique] = useState<string | null>(null)
   const [showTechniques, setShowTechniques] = useState(false)
   const [techniques, setTechniques] = useState<Technique[]>([])
+  const [promptHistoryId, setPromptHistoryId] = useState<string | null>(null)
+  const [enhancedTechniques, setEnhancedTechniques] = useState<string[]>([])
   
   // Store state
   const {
@@ -45,6 +51,8 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
   useEffect(() => {
     fetchTechniques().then(techs => {
       setTechniques(techs)
+    }).catch(err => {
+      console.error('Failed to load techniques:', err)
     })
   }, [fetchTechniques])
 
@@ -101,6 +109,14 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
       if (response) {
         await streamingPromise // Wait for streaming to complete
         setCurrentOutput(response.enhanced.prompt)
+        
+        // Store data for feedback
+        if (response.history_id) {
+          setPromptHistoryId(response.history_id)
+        }
+        if (response.techniques_used) {
+          setEnhancedTechniques(response.techniques_used)
+        }
         
         if (onComplete) {
           onComplete({
@@ -166,24 +182,31 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
             onChange={(e) => setUserInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter your prompt here... (e.g., 'Help me write a blog post about sustainable living')"
-            className="w-full min-h-[150px] p-4 pr-12 text-base border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full min-h-[120px] sm:min-h-[150px] p-3 sm:p-4 pr-12 text-sm sm:text-base border rounded-xl resize-none transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50"
             disabled={isStreaming}
+            aria-label="Prompt input"
+            aria-describedby="prompt-helper"
           />
-          <div className="absolute bottom-4 right-4 flex items-center gap-2">
-            <span className="text-xs text-gray-400">
-              Ctrl + Enter
-            </span>
+          <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 flex items-center gap-2">
+            <KeyboardIndicator keys={['Ctrl', 'Enter']} className="text-xs text-gray-400">
+              <span className="hidden sm:inline">Submit</span>
+            </KeyboardIndicator>
           </div>
         </div>
         
-        <div className="mt-4 flex items-center justify-between">
+        <div id="prompt-helper" className="sr-only">
+          Press Control + Enter to submit your prompt for enhancement
+        </div>
+        
+        <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:justify-between">
           <button
             onClick={handleEnhance}
             disabled={!userInput.trim() || isStreaming || !isConnected}
             className={cn(
-              "btn-primary",
+              "btn-primary w-full sm:w-auto justify-center",
               (isStreaming || !isConnected) && "cursor-not-allowed opacity-50"
             )}
+            aria-busy={isStreaming}
           >
             {!isConnected ? (
               <>
@@ -200,12 +223,14 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
           
           <button
             onClick={() => setShowTechniques(!showTechniques)}
-            className="btn-ghost text-sm"
+            className="btn-ghost text-sm w-full sm:w-auto justify-center"
             disabled={isStreaming}
+            aria-expanded={showTechniques}
+            aria-controls="techniques-section"
           >
             <span className="mr-2">Techniques</span>
             <ChevronDown className={cn(
-              "h-4 w-4 transition-transform",
+              "h-4 w-4 transition-transform duration-200",
               showTechniques && "rotate-180"
             )} />
           </button>
@@ -234,8 +259,8 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
             {/* Cancel button */}
             <button
               onClick={handleCancelEnhancement}
-              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Cancel enhancement"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              aria-label="Cancel enhancement"
             >
               <X className="h-4 w-4" />
             </button>
@@ -275,11 +300,11 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="overflow-hidden">
+            <div id="techniques-section" className="overflow-hidden">
               <div className="space-y-4">
               {/* Loading state */}
               {loadingTechniques && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {[...Array(6)].map((_, i) => (
                     <TechniqueCardSkeleton key={i} />
                   ))}
@@ -288,18 +313,21 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
               
               {/* Error state */}
               {techniquesError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-                  <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm text-red-800">Failed to load techniques</p>
-                    <p className="text-xs text-red-600 mt-1">{techniquesError}</p>
-                  </div>
-                </div>
+                <ErrorState
+                  title="Failed to load techniques"
+                  message={techniquesError}
+                  onRetry={() => {
+                    fetchTechniques().then(techs => {
+                      setTechniques(techs)
+                    })
+                  }}
+                  variant="card"
+                />
               )}
               
               {/* Techniques grid */}
               {!loadingTechniques && !techniquesError && techniques.length > 0 && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {techniques.map((technique) => (
                     <TechniqueCard
                       key={technique.id}
@@ -315,6 +343,11 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
                   ))}
                 </div>
               )}
+              
+              {/* Live region for screen reader announcements */}
+              <LiveRegion priority="polite">
+                {selectedTechnique && `Selected technique: ${techniques.find(t => t.id === selectedTechnique)?.name}`}
+              </LiveRegion>
               </div>
             </div>
           </motion.div>
@@ -330,14 +363,27 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 sm:p-6">
               <div className="flex items-start">
-              <Sparkles className="h-6 w-6 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-green-900">Enhancement Complete!</h3>
-                <p className="text-sm text-green-700 mt-1">
+                <h3 className="text-base sm:text-lg font-semibold text-green-900">Enhancement Complete!</h3>
+                <p className="text-xs sm:text-sm text-green-700 mt-1">
                   Your prompt has been successfully enhanced. The result is ready to use.
                 </p>
+                
+                {/* Feedback section */}
+                {promptHistoryId && (
+                  <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <QuickFeedback promptHistoryId={promptHistoryId} />
+                    <FeedbackButton
+                      promptHistoryId={promptHistoryId}
+                      techniques={enhancedTechniques}
+                      size="sm"
+                      variant="outline"
+                    />
+                  </div>
+                )}
               </div>
               </div>
             </div>
