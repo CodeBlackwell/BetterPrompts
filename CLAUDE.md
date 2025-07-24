@@ -256,6 +256,11 @@ When implemented, the project will include:
 - **Performance Targets**: <200ms API response, <500ms inference
 - **Scale**: 10,000 RPS sustained, 99.9% uptime SLA
 
+## Development Considerations
+
+- **Local Development Notes**:
+  - Remember that we don't use TorchServe in the local development. Still write tests, configurations etc for production environment, but note that we don't use it locally
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.

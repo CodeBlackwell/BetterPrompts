@@ -9,6 +9,15 @@
 [![Go](https://img.shields.io/badge/Go-1.23-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
 
+### Test Coverage
+
+![Total Coverage](./badges/coverage-total.svg)
+![API Gateway](./badges/coverage-api-gateway.svg)
+![Technique Selector](./badges/coverage-technique-selector.svg)
+![Intent Classifier](./badges/coverage-intent-classifier.svg)
+![Prompt Generator](./badges/coverage-prompt-generator.svg)
+![Frontend](./badges/coverage-frontend.svg)
+
 **Transform your AI interactions with intelligent prompt enhancement - no expertise required!**
 
 [🔗 Live Demo](#) • [📖 Documentation](./docs) • [🐛 Report Bug](https://github.com/CodeBlackwell/BetterPrompts/issues) • [✨ Request Feature](https://github.com/CodeBlackwell/BetterPrompts/issues)
