@@ -1,0 +1,152 @@
+# Unified Coverage Makefile for BetterPrompts
+# This file handles test coverage collection and reporting across all services
+
+.PHONY: all coverage coverage-go coverage-python coverage-frontend coverage-report coverage-badges clean help
+
+# Variables
+PROJECT_ROOT := $(shell pwd)
+COVERAGE_DIR := $(PROJECT_ROOT)/.coverage
+GO_SERVICES := backend/services/api-gateway backend/services/technique-selector
+PYTHON_SERVICES := backend/services/intent-classifier backend/services/prompt-generator
+FRONTEND_DIR := frontend
+
+# Colors
+GREEN := \033[0;32m
+BLUE := \033[0;34m
+YELLOW := \033[1;33m
+RED := \033[0;31m
+NC := \033[0m # No Color
+
+# Default target
+all: coverage
+
+# Help target
+help:
+	@echo "$(BLUE)BetterPrompts Coverage Commands:$(NC)"
+	@echo "  make coverage         - Run all tests and generate coverage report"
+	@echo "  make coverage-go      - Run Go service tests with coverage"
+	@echo "  make coverage-python  - Run Python service tests with coverage"
+	@echo "  make coverage-frontend - Run frontend tests with coverage"
+	@echo "  make coverage-report  - Generate unified coverage report"
+	@echo "  make coverage-badges  - Generate coverage badges"
+	@echo "  make coverage-html    - Generate HTML coverage reports"
+	@echo "  make clean           - Clean all coverage files"
+
+# Main coverage target
+coverage: clean coverage-go coverage-python coverage-frontend coverage-report
+	@echo "$(GREEN)✅ All coverage reports generated successfully!$(NC)"
+
+# Go coverage
+coverage-go:
+	@echo "$(BLUE)🐹 Running Go tests with coverage...$(NC)"
+	@for service in $(GO_SERVICES); do \
+		echo "$(YELLOW)Testing $$service...$(NC)"; \
+		if [ -d "$$service" ]; then \
+			cd "$$service" && \
+			go test -v -race -coverprofile=coverage.out -covermode=atomic ./... || true && \
+			go tool cover -html=coverage.out -o coverage.html || true && \
+			cd "$(PROJECT_ROOT)"; \
+		else \
+			echo "$(RED)⚠️  Directory $$service not found$(NC)"; \
+		fi; \
+	done
+
+# Python coverage
+coverage-python:
+	@echo "$(BLUE)🐍 Running Python tests with coverage...$(NC)"
+	@for service in $(PYTHON_SERVICES); do \
+		echo "$(YELLOW)Testing $$service...$(NC)"; \
+		if [ -d "$$service" ]; then \
+			cd "$$service" && \
+			if [ -f "requirements.txt" ]; then \
+				python -m pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term || true; \
+			else \
+				echo "$(RED)⚠️  No requirements.txt found in $$service$(NC)"; \
+			fi && \
+			cd "$(PROJECT_ROOT)"; \
+		else \
+			echo "$(RED)⚠️  Directory $$service not found$(NC)"; \
+		fi; \
+	done
+
+# Frontend coverage
+coverage-frontend:
+	@echo "$(BLUE)⚛️  Running frontend tests with coverage...$(NC)"
+	@if [ -d "$(FRONTEND_DIR)" ]; then \
+		cd "$(FRONTEND_DIR)" && \
+		npm test -- --coverage --watchAll=false || true && \
+		cd "$(PROJECT_ROOT)"; \
+	else \
+		echo "$(RED)⚠️  Frontend directory not found$(NC)"; \
+	fi
+
+# Generate unified coverage report
+coverage-report:
+	@echo "$(BLUE)📊 Generating unified coverage report...$(NC)"
+	@mkdir -p "$(COVERAGE_DIR)"
+	@python3 scripts/coverage-aggregator.py --format text
+	@python3 scripts/coverage-aggregator.py --format markdown --output "$(COVERAGE_DIR)/COVERAGE.md"
+	@python3 scripts/coverage-aggregator.py --format json --output "$(COVERAGE_DIR)/coverage.json"
+	@echo "$(GREEN)✅ Coverage reports saved to $(COVERAGE_DIR)$(NC)"
+
+# Generate coverage badges
+coverage-badges:
+	@echo "$(BLUE)🛡️  Generating coverage badges...$(NC)"
+	@./scripts/generate-badges.sh
+
+# Generate HTML reports
+coverage-html:
+	@echo "$(BLUE)🌐 Generating HTML coverage reports...$(NC)"
+	@mkdir -p "$(COVERAGE_DIR)/html"
+	@echo "<html><head><title>BetterPrompts Coverage</title></head><body>" > "$(COVERAGE_DIR)/html/index.html"
+	@echo "<h1>BetterPrompts Coverage Reports</h1>" >> "$(COVERAGE_DIR)/html/index.html"
+	@echo "<ul>" >> "$(COVERAGE_DIR)/html/index.html"
+	@for service in $(GO_SERVICES); do \
+		if [ -f "$$service/coverage.html" ]; then \
+			service_name=$$(basename $$service); \
+			cp "$$service/coverage.html" "$(COVERAGE_DIR)/html/$$service_name-coverage.html"; \
+			echo "<li><a href='$$service_name-coverage.html'>$$service_name (Go)</a></li>" >> "$(COVERAGE_DIR)/html/index.html"; \
+		fi; \
+	done
+	@for service in $(PYTHON_SERVICES); do \
+		if [ -d "$$service/htmlcov" ]; then \
+			service_name=$$(basename $$service); \
+			cp -r "$$service/htmlcov" "$(COVERAGE_DIR)/html/$$service_name-coverage"; \
+			echo "<li><a href='$$service_name-coverage/index.html'>$$service_name (Python)</a></li>" >> "$(COVERAGE_DIR)/html/index.html"; \
+		fi; \
+	done
+	@if [ -d "$(FRONTEND_DIR)/coverage/lcov-report" ]; then \
+		cp -r "$(FRONTEND_DIR)/coverage/lcov-report" "$(COVERAGE_DIR)/html/frontend-coverage"; \
+		echo "<li><a href='frontend-coverage/index.html'>Frontend (TypeScript)</a></li>" >> "$(COVERAGE_DIR)/html/index.html"; \
+	fi
+	@echo "</ul></body></html>" >> "$(COVERAGE_DIR)/html/index.html"
+	@echo "$(GREEN)✅ HTML reports available at $(COVERAGE_DIR)/html/index.html$(NC)"
+
+# Clean coverage files
+clean:
+	@echo "$(YELLOW)🧹 Cleaning coverage files...$(NC)"
+	@rm -rf "$(COVERAGE_DIR)"
+	@find . -name "coverage.out" -delete
+	@find . -name "coverage.html" -delete
+	@find . -name "coverage.xml" -delete
+	@find . -name ".coverage" -delete
+	@find . -name "htmlcov" -type d -exec rm -rf {} +
+	@find . -name "coverage" -type d -path "*/frontend/*" -exec rm -rf {} +
+	@find . -name ".nyc_output" -type d -exec rm -rf {} +
+	@echo "$(GREEN)✅ Coverage files cleaned$(NC)"
+
+# CI-specific targets
+ci-coverage: coverage
+	@echo "$(BLUE)📤 Preparing coverage for CI upload...$(NC)"
+	@mkdir -p "$(COVERAGE_DIR)/reports"
+	@find . -name "coverage.out" -exec cp {} "$(COVERAGE_DIR)/reports/" \; 2>/dev/null || true
+	@find . -name "coverage.xml" -exec cp {} "$(COVERAGE_DIR)/reports/" \; 2>/dev/null || true
+	@find . -name "lcov.info" -exec cp {} "$(COVERAGE_DIR)/reports/" \; 2>/dev/null || true
+
+# Watch mode for development
+watch-coverage:
+	@echo "$(BLUE)👁️  Watching for changes and updating coverage...$(NC)"
+	@while true; do \
+		make coverage-report; \
+		sleep 5; \
+	done

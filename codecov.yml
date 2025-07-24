@@ -1,0 +1,112 @@
+# Codecov configuration for BetterPrompts
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 2%
+        base: auto
+        if_not_found: success
+        if_ci_failed: error
+        only_pulls: false
+        
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+        base: auto
+        if_not_found: success
+        if_ci_failed: error
+        
+    changes: no
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+comment:
+  layout: "reach,diff,flags,files,footer"
+  behavior: default
+  require_changes: no
+  require_base: no
+  require_head: yes
+  
+ignore:
+  - "**/*_test.go"
+  - "**/test_*.py"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/tests/**"
+  - "**/__tests__/**"
+  - "**/mock*"
+  - "**/vendor/**"
+  - "**/node_modules/**"
+  - "**/.next/**"
+  - "**/coverage/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/*.pb.go"
+  - "**/migrations/**"
+  - "**/cmd/**"
+  - "ml-pipeline/**"  # ML training code excluded
+
+flags:
+  go:
+    paths:
+      - backend/services/api-gateway/
+      - backend/services/technique-selector/
+    carryforward: true
+    
+  python:
+    paths:
+      - backend/services/intent-classifier/
+      - backend/services/prompt-generator/
+    carryforward: true
+    
+  frontend:
+    paths:
+      - frontend/
+    carryforward: true
+
+# Service-specific configurations
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: 80%
+        threshold: 2%
+        
+  individual_components:
+    - name: api-gateway
+      paths:
+        - backend/services/api-gateway/**
+      target: 85%
+      
+    - name: technique-selector
+      paths:
+        - backend/services/technique-selector/**
+      target: 90%
+      
+    - name: intent-classifier
+      paths:
+        - backend/services/intent-classifier/**
+      target: 85%
+      
+    - name: prompt-generator
+      paths:
+        - backend/services/prompt-generator/**
+      target: 85%
+      
+    - name: frontend
+      paths:
+        - frontend/**
+      target: 80%

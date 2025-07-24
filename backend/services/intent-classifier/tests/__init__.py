@@ -1,1 +1,1 @@
-# Test package for intent classifier service
+"""Test package for Intent Classification Service."""

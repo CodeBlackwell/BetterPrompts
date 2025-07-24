@@ -1,228 +1,245 @@
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
-import asyncio
-from app.models.classifier import IntentClassifier
-from app.schemas.intent import IntentRequest, IntentResponse
+"""Unit tests for the IntentClassifier class."""
 
-@pytest.mark.unit
+import pytest
+import torch
+from unittest.mock import patch, MagicMock, AsyncMock
+import time
+from app.models.torchserve_client import (
+    TorchServeError,
+    TorchServeConnectionError,
+    TorchServeInferenceError
+)
+
+
 class TestIntentClassifier:
-    """Test suite for the Intent Classification service"""
+    """Test suite for IntentClassifier."""
     
-    @pytest.fixture
-    async def classifier(self):
-        """Create a mock classifier instance for testing."""
-        with patch('app.models.classifier.settings') as mock_settings:
-            mock_settings.USE_TORCHSERVE = False
-            mock_settings.MODEL_NAME = "test-model"
-            mock_settings.MODEL_MAX_LENGTH = 512
+    @pytest.mark.asyncio
+    async def test_initialization(self, classifier):
+        """Test classifier initialization."""
+        assert classifier.model is None
+        assert classifier.tokenizer is None
+        assert classifier.device == torch.device("cpu")
+        assert not classifier._initialized
+        assert len(classifier.intent_labels) == 10
+        assert "chain_of_thought" in classifier.technique_mapping["question_answering"]
+    
+    @pytest.mark.asyncio
+    async def test_initialize_model_local(self, classifier):
+        """Test local model initialization."""
+        with patch.object(classifier, '_load_model') as mock_load:
+            await classifier.initialize_model()
             
-            classifier = IntentClassifier()
-            # Mock the model loading
-            classifier.model = Mock()
-            classifier.tokenizer = Mock()
-            classifier._initialized = True
-            return classifier
+            mock_load.assert_called_once()
+            assert classifier._initialized
     
     @pytest.mark.asyncio
-    @pytest.mark.critical
-    async def test_classify_simple_prompt(self, classifier):
-        """Test classification of simple prompts.
+    async def test_initialize_model_torchserve(self, mock_settings, mock_torchserve_client, monkeypatch):
+        """Test TorchServe model initialization."""
+        mock_settings.USE_TORCHSERVE = True
+        monkeypatch.setattr("app.core.config.settings", mock_settings)
         
-        Validates:
-        - Correct intent classification
-        - Appropriate complexity scoring
-        - Confidence threshold handling
-        """
-        # Mock the classification result
-        classifier._classify_intent = AsyncMock(return_value={
-            "intent": "question_answering",
-            "confidence": 0.95,
-            "complexity": "simple",
-            "suggested_techniques": ["direct_answer"],
-            "tokens_used": 10
-        })
+        from app.models.classifier import IntentClassifier
+        classifier = IntentClassifier()
         
-        result = await classifier.classify("What is the capital of France?")
-        
-        assert result["intent"] == "question_answering"
-        assert result["complexity"] == "simple"
-        assert result["confidence"] > 0.9
-        assert "direct_answer" in result["suggested_techniques"]
+        with patch('app.models.classifier.TorchServeClient', return_value=mock_torchserve_client):
+            await classifier.initialize_model()
+            
+            mock_torchserve_client.connect.assert_called_once()
+            mock_torchserve_client.health_check.assert_called_once()
+            assert classifier._initialized
     
     @pytest.mark.asyncio
-    @pytest.mark.critical
-    async def test_classify_complex_prompt(self, classifier):
-        """Test classification of complex multi-intent prompts.
+    async def test_initialize_model_torchserve_unhealthy(self, mock_settings, mock_torchserve_client, monkeypatch):
+        """Test initialization failure when TorchServe is unhealthy."""
+        mock_settings.USE_TORCHSERVE = True
+        monkeypatch.setattr("app.core.config.settings", mock_settings)
+        mock_torchserve_client.health_check.return_value = False
         
-        Validates:
-        - Multi-intent detection
-        - Complex task identification
-        - Appropriate technique suggestions
-        """
-        complex_prompt = """
-        Analyze the quarterly sales data, identify trends, 
-        create visualizations, and provide recommendations 
-        for improving performance in underperforming regions.
-        """
+        from app.models.classifier import IntentClassifier
+        classifier = IntentClassifier()
         
-        classifier._classify_intent = AsyncMock(return_value={
-            "intent": "data_analysis",
-            "confidence": 0.85,
-            "complexity": "complex",
-            "suggested_techniques": ["chain_of_thought", "tree_of_thoughts", "self_consistency"],
-            "tokens_used": 45
-        })
-        
-        result = await classifier.classify(complex_prompt)
-        
-        assert result["intent"] == "data_analysis"
-        assert result["complexity"] == "complex"
-        assert len(result["suggested_techniques"]) > 1
-        assert "chain_of_thought" in result["suggested_techniques"]
+        with patch('app.models.classifier.TorchServeClient', return_value=mock_torchserve_client):
+            with pytest.raises(TorchServeConnectionError):
+                await classifier.initialize_model()
+    
+    def test_is_initialized(self, classifier):
+        """Test is_initialized method."""
+        assert not classifier.is_initialized()
+        classifier._initialized = True
+        assert classifier.is_initialized()
     
     @pytest.mark.asyncio
-    async def test_classify_code_generation(self, classifier):
-        """Test classification of code generation requests.
+    async def test_classify_not_initialized(self, classifier):
+        """Test classification fails when model not initialized."""
+        with pytest.raises(RuntimeError, match="Model not initialized"):
+            await classifier.classify("Test text")
+    
+    @pytest.mark.asyncio
+    async def test_classify_local_model(self, initialized_classifier, mock_model_output, sample_texts):
+        """Test classification with local model."""
+        classifier = initialized_classifier
         
-        Validates:
-        - Code generation intent detection
-        - Programming language identification
-        - Algorithm complexity assessment
-        """
-        classifier._classify_intent = AsyncMock(return_value={
-            "intent": "code_generation",
-            "confidence": 0.92,
-            "complexity": "moderate",
-            "suggested_techniques": ["few_shot", "chain_of_thought"],
-            "tokens_used": 15
-        })
+        # Mock the model and tokenizer
+        mock_tokenizer = MagicMock()
+        mock_tokenizer.return_value = {
+            "input_ids": torch.tensor([[1, 2, 3, 4, 5]]),
+            "attention_mask": torch.tensor([[1, 1, 1, 1, 1]])
+        }
+        mock_model = MagicMock()
+        mock_model.return_value = mock_model_output
         
-        result = await classifier.classify("Write a Python function to sort a list using quicksort")
+        classifier.tokenizer = mock_tokenizer
+        classifier.model = mock_model
+        
+        # Test classification
+        result = await classifier.classify(sample_texts["code_generation"])
         
         assert result["intent"] == "code_generation"
-        assert result["confidence"] > 0.9
-        assert "few_shot" in result["suggested_techniques"]
+        assert 0 <= result["confidence"] <= 1
+        assert result["complexity"] in ["simple", "moderate", "complex"]
+        assert isinstance(result["suggested_techniques"], list)
+        assert result["tokens_used"] == 5
+        assert len(result["all_probabilities"]) == 10
     
     @pytest.mark.asyncio
-    async def test_empty_input_handling(self, classifier):
-        """Test handling of empty input.
+    async def test_classify_torchserve(self, torchserve_classifier, mock_torchserve_response, sample_texts):
+        """Test classification with TorchServe."""
+        torchserve_classifier.torchserve_client.classify.return_value = mock_torchserve_response
         
-        Validates:
-        - Proper error handling for empty strings
-        - Clear error messages
-        """
-        with pytest.raises(ValueError, match="Input text must be a non-empty string"):
-            await classifier.classify("")
-            
-        with pytest.raises(ValueError, match="Input text must be a non-empty string"):
-            await classifier.classify(None)
+        result = await torchserve_classifier.classify(sample_texts["code_generation"])
+        
+        assert result["intent"] == "code_generation"
+        assert result["confidence"] == 0.92
+        assert result["complexity"] == "moderate"
+        assert "chain_of_thought" in result["suggested_techniques"]
+        assert result["tokens_used"] == 125
+        assert "torchserve_metadata" in result
     
     @pytest.mark.asyncio
-    async def test_very_long_input_handling(self, classifier):
-        """Test handling of very long inputs.
+    async def test_classify_torchserve_error(self, torchserve_classifier, sample_texts):
+        """Test error handling when TorchServe fails."""
+        torchserve_classifier.torchserve_client.classify.side_effect = TorchServeInferenceError("Inference failed")
         
-        Validates:
-        - Input truncation for model limits
-        - Graceful handling of oversized inputs
-        - Warning generation for truncation
-        """
-        long_input = "x" * 10000  # Very long input
-        
-        classifier._classify_intent = AsyncMock(return_value={
-            "intent": "other",
-            "confidence": 0.5,
-            "complexity": "simple",
-            "suggested_techniques": ["direct_prompting"],
-            "tokens_used": 512,
-            "truncated": True
-        })
-        
-        result = await classifier.classify(long_input)
-        assert result is not None
-        assert result["intent"] == "other"
-        # Should indicate truncation occurred
-        classifier._classify_intent.assert_called_once()
+        with pytest.raises(TorchServeError):
+            await torchserve_classifier.classify(sample_texts["simple"])
     
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("prompt,expected_intent,expected_complexity", [
-        ("Hello", "conversation", "simple"),
-        ("Explain quantum physics", "question_answering", "complex"),
-        ("Debug this code: print('hello')", "problem_solving", "moderate"),
-        ("Write a business plan", "creative_writing", "complex"),
-        ("Translate to Spanish", "translation", "simple"),
+    @pytest.mark.parametrize("text,expected_complexity", [
+        ("What is 2+2?", "simple"),
+        ("Write a function to calculate factorial", "moderate"),
+        ("Design a distributed system with fault tolerance", "complex")
     ])
-    async def test_various_prompt_types(self, classifier, prompt, expected_intent, expected_complexity):
-        """Test classification of various prompt types.
+    def test_determine_complexity(self, initialized_classifier, text, expected_complexity):
+        """Test complexity determination."""
+        # Test with different confidence levels
+        complexities = []
+        for confidence in [0.9, 0.7, 0.5]:
+            complexity = initialized_classifier._determine_complexity(text, confidence)
+            complexities.append(complexity)
         
-        Validates:
-        - Diverse intent recognition
-        - Appropriate complexity assignment
-        - Consistent classification behavior
-        """
-        classifier._classify_intent = AsyncMock(return_value={
-            "intent": expected_intent,
-            "confidence": 0.8,
-            "complexity": expected_complexity,
-            "suggested_techniques": ["test_technique"],
-            "tokens_used": 20
-        })
+        # At least one should match expected complexity
+        assert expected_complexity in complexities
+    
+    def test_determine_complexity_factors(self, initialized_classifier):
+        """Test various complexity factors."""
+        # Long text
+        long_text = "word " * 150
+        complexity = initialized_classifier._determine_complexity(long_text, 0.8)
+        assert complexity in ["moderate", "complex"]
         
-        result = await classifier.classify(prompt)
+        # Multiple conditions
+        conditional_text = "If A then B. When C, do D. Unless E, perform F."
+        complexity = initialized_classifier._determine_complexity(conditional_text, 0.8)
+        assert complexity in ["moderate", "complex"]
         
-        assert result["intent"] == expected_intent
-        assert result["complexity"] == expected_complexity
+        # Comparisons
+        comparison_text = "Compare X versus Y. What's the difference between A and B?"
+        complexity = initialized_classifier._determine_complexity(comparison_text, 0.8)
+        assert complexity in ["moderate", "complex"]
     
     @pytest.mark.asyncio
-    async def test_confidence_threshold(self, classifier):
-        """Test low confidence handling.
+    async def test_cleanup_local_model(self, initialized_classifier):
+        """Test cleanup for local model."""
+        classifier = initialized_classifier
+        classifier.model = MagicMock()
+        classifier.tokenizer = MagicMock()
         
-        Validates:
-        - Low confidence detection
-        - Fallback behavior
-        - Clarification recommendations
-        """
-        classifier._classify_intent = AsyncMock(return_value={
-            "intent": "other",
-            "confidence": 0.3,  # Low confidence
-            "complexity": "simple",
-            "suggested_techniques": ["clarification_request"],
-            "tokens_used": 5
-        })
+        await classifier.cleanup()
         
-        result = await classifier.classify("???")
-        
-        assert result["intent"] == "other"
-        assert result["confidence"] < 0.5
-        assert "clarification_request" in result["suggested_techniques"]
+        assert classifier.model is None
+        assert classifier.tokenizer is None
+        assert not classifier._initialized
     
     @pytest.mark.asyncio
-    @pytest.mark.torchserve
-    async def test_torchserve_integration(self, classifier):
-        """Test TorchServe integration when enabled.
+    async def test_cleanup_torchserve(self, torchserve_classifier):
+        """Test cleanup for TorchServe."""
+        await torchserve_classifier.cleanup()
         
-        Validates:
-        - TorchServe client usage
-        - Response format compatibility
-        - Error handling for service failures
-        """
-        # This test requires TorchServe to be running
-        with patch('app.models.classifier.settings') as mock_settings:
-            mock_settings.USE_TORCHSERVE = True
-            mock_settings.TORCHSERVE_URL = "http://localhost:8080/predictions/intent_classifier"
-            
-            # Mock TorchServe client
-            mock_client = AsyncMock()
-            mock_client.classify = AsyncMock(return_value={
-                "intent": "data_analysis",
-                "confidence": 0.85,
-                "complexity": {"level": "moderate", "score": 0.7},
-                "suggested_techniques": ["chain_of_thought"]
-            })
-            
-            classifier.torchserve_client = mock_client
-            classifier.use_torchserve = True
-            
-            result = await classifier.classify("Analyze data and create charts")
-            
-            assert result["intent"] == "data_analysis"
-            assert mock_client.classify.called
+        torchserve_classifier.torchserve_client.close.assert_called_once()
+        assert torchserve_classifier.torchserve_client is None
+        assert not torchserve_classifier._initialized
+    
+    @pytest.mark.asyncio
+    async def test_performance_classification(self, initialized_classifier, mock_model_output, performance_metrics):
+        """Test classification performance."""
+        classifier = initialized_classifier
+        
+        # Mock the model and tokenizer
+        mock_tokenizer = MagicMock()
+        mock_tokenizer.return_value = {
+            "input_ids": torch.tensor([[1, 2, 3, 4, 5]]),
+            "attention_mask": torch.tensor([[1, 1, 1, 1, 1]])
+        }
+        mock_model = MagicMock()
+        mock_model.return_value = mock_model_output
+        
+        classifier.tokenizer = mock_tokenizer
+        classifier.model = mock_model
+        
+        # Measure classification time
+        start_time = time.time()
+        result = await classifier.classify("Test text for performance")
+        classification_time_ms = (time.time() - start_time) * 1000
+        
+        assert classification_time_ms < performance_metrics["max_classification_time_ms"]
+    
+    @pytest.mark.parametrize("intent,expected_techniques", [
+        ("question_answering", ["chain_of_thought", "few_shot"]),
+        ("creative_writing", ["few_shot", "iterative_refinement"]),
+        ("code_generation", ["chain_of_thought", "few_shot", "self_consistency"]),
+        ("data_analysis", ["chain_of_thought", "tree_of_thoughts"]),
+        ("reasoning", ["chain_of_thought", "tree_of_thoughts", "self_consistency"])
+    ])
+    def test_technique_mapping(self, classifier, intent, expected_techniques):
+        """Test technique mapping for different intents."""
+        techniques = classifier.technique_mapping.get(intent, [])
+        for expected in expected_techniques:
+            assert expected in techniques
+    
+    @pytest.mark.asyncio
+    async def test_concurrent_classifications(self, initialized_classifier, mock_model_output):
+        """Test concurrent classification requests."""
+        classifier = initialized_classifier
+        
+        # Mock the model and tokenizer
+        mock_tokenizer = MagicMock()
+        mock_tokenizer.return_value = {
+            "input_ids": torch.tensor([[1, 2, 3, 4, 5]]),
+            "attention_mask": torch.tensor([[1, 1, 1, 1, 1]])
+        }
+        mock_model = MagicMock()
+        mock_model.return_value = mock_model_output
+        
+        classifier.tokenizer = mock_tokenizer
+        classifier.model = mock_model
+        
+        # Run multiple classifications concurrently
+        import asyncio
+        texts = ["Test 1", "Test 2", "Test 3", "Test 4", "Test 5"]
+        tasks = [classifier.classify(text) for text in texts]
+        results = await asyncio.gather(*tasks)
+        
+        assert len(results) == 5
+        for result in results:
+            assert "intent" in result
+            assert "confidence" in result

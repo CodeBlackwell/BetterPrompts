@@ -1,0 +1,201 @@
+# Artillery stress testing configuration for BetterPrompts
+# Tests system behavior under extreme load conditions
+
+config:
+  target: "http://localhost"
+  phases:
+    # Warm-up phase
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm-up"
+    
+    # Gradual ramp-up
+    - duration: 300
+      arrivalRate: 10
+      rampTo: 100
+      name: "Ramp-up"
+    
+    # Sustained high load
+    - duration: 600
+      arrivalRate: 100
+      name: "Sustained Load"
+    
+    # Spike test
+    - duration: 60
+      arrivalRate: 500
+      name: "Spike Test"
+    
+    # Recovery observation
+    - duration: 120
+      arrivalRate: 50
+      name: "Recovery"
+  
+  processor: "./artillery-processor.js"
+  
+  payload:
+    - path: "./test-data/prompts.csv"
+      fields:
+        - "prompt"
+        - "complexity"
+        - "expected_techniques"
+    - path: "./test-data/users.csv"
+      fields:
+        - "email"
+        - "password"
+  
+  variables:
+    baseUrl: "{{ $environment.BASE_URL || 'http://localhost' }}"
+    apiVersion: "v1"
+
+scenarios:
+  # Scenario 1: Anonymous user enhancement
+  - name: "Anonymous Enhancement"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/{{ apiVersion }}/health"
+          expect:
+            - statusCode: 200
+      
+      - post:
+          url: "/api/{{ apiVersion }}/enhance"
+          json:
+            prompt: "{{ prompt }}"
+          capture:
+            - json: "$.enhanced_prompt"
+              as: "enhanced"
+            - json: "$.metadata.total_time_ms"
+              as: "enhancement_time"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: enhanced_prompt
+            - hasProperty: techniques_applied
+          afterResponse: "checkEnhancementPerformance"
+  
+  # Scenario 2: Authenticated user flow
+  - name: "Authenticated User Flow"
+    weight: 50
+    flow:
+      # Login
+      - post:
+          url: "/api/{{ apiVersion }}/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.access_token"
+              as: "token"
+          expect:
+            - statusCode: 200
+            - hasProperty: access_token
+      
+      # Single enhancement
+      - post:
+          url: "/api/{{ apiVersion }}/enhance"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            prompt: "{{ prompt }}"
+            techniques: ["auto"]
+            options:
+              save_to_history: true
+          expect:
+            - statusCode: 200
+            - hasProperty: enhanced_prompt
+          afterResponse: "checkEnhancementPerformance"
+      
+      # Check history
+      - get:
+          url: "/api/{{ apiVersion }}/history?limit=10"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: items
+      
+      # Batch enhancement (20% chance)
+      - post:
+          url: "/api/{{ apiVersion }}/enhance/batch"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            prompts:
+              - "Write a function to sort an array"
+              - "Explain machine learning"
+              - "Design a REST API"
+          ifTrue: "randomBatch"
+          expect:
+            - statusCode: 200
+            - hasProperty: results
+          afterResponse: "checkBatchPerformance"
+  
+  # Scenario 3: Admin monitoring
+  - name: "Admin Monitoring"
+    weight: 10
+    flow:
+      # Admin login
+      - post:
+          url: "/api/{{ apiVersion }}/auth/login"
+          json:
+            email: "admin@betterprompts.ai"
+            password: "{{ $environment.ADMIN_PASSWORD }}"
+          capture:
+            - json: "$.access_token"
+              as: "adminToken"
+          expect:
+            - statusCode: 200
+      
+      # Check system metrics
+      - get:
+          url: "/api/{{ apiVersion }}/admin/metrics"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: system_health
+            - hasProperty: performance_metrics
+      
+      # Check user stats
+      - get:
+          url: "/api/{{ apiVersion }}/admin/users/stats"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+  
+  # Scenario 4: API stress test
+  - name: "API Stress Test"
+    weight: 10
+    flow:
+      # Rapid-fire requests
+      - loop:
+          - post:
+              url: "/api/{{ apiVersion }}/enhance"
+              json:
+                prompt: "Quick test {{ $loopCount }}"
+              expect:
+                - statusCode:
+                    - 200
+                    - 429  # Rate limiting is acceptable
+          count: 10
+
+# Ensure thresholds for performance
+ensure:
+  - expression: "p95(http.response_time) < 300"
+    description: "95% of API responses under 300ms"
+  
+  - expression: "p99(http.response_time) < 500"
+    description: "99% of API responses under 500ms"
+  
+  - expression: "p95(enhancement_time) < 3000"
+    description: "95% of enhancements under 3s"
+  
+  - expression: "p99(enhancement_time) < 5000"
+    description: "99% of enhancements under 5s"
+  
+  - expression: "errors.rate < 0.01"
+    description: "Error rate below 1%"
+  
+  - expression: "vusers.completed / vusers.created > 0.95"
+    description: "95% of virtual users complete their scenarios"

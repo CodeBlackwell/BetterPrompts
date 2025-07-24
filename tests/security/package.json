@@ -1,0 +1,23 @@
+{
+  "name": "betterprompts-security-tests",
+  "version": "1.0.0",
+  "description": "Security test suite for BetterPrompts",
+  "scripts": {
+    "test": "node security-test-runner.js",
+    "test:backend": "cd ../../backend/services/api-gateway && go test -v ./tests/security/...",
+    "test:frontend": "cd ../../frontend && npm run test:security",
+    "scan:dependencies": "npm audit && cd ../../frontend && npm audit",
+    "scan:containers": "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image betterprompts/api-gateway:latest",
+    "report": "node generate-security-report.js"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "axios": "^1.6.0",
+    "puppeteer": "^21.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
+    "ts-node": "^10.9.0"
+  }
+}
