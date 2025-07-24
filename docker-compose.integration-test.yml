@@ -1,0 +1,260 @@
+version: '3.8'
+
+services:
+  # Test Database - Isolated from production
+  test-postgres:
+    image: pgvector/pgvector:pg16
+    container_name: betterprompts-test-postgres
+    environment:
+      - POSTGRES_USER=betterprompts
+      - POSTGRES_PASSWORD=betterprompts
+      - POSTGRES_DB=betterprompts_test
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8
+    volumes:
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U betterprompts"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Test Redis - Isolated from production
+  test-redis:
+    image: redis:7-alpine
+    container_name: betterprompts-test-redis
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Mock TorchServe for faster tests
+  mock-torchserve:
+    build:
+      context: ./tests/mocks/torchserve
+      dockerfile: Dockerfile
+    container_name: betterprompts-mock-torchserve
+    ports:
+      - "8080:8080"
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # API Gateway with test configuration
+  test-api-gateway:
+    build:
+      context: ./backend/services/api-gateway
+      dockerfile: Dockerfile
+    container_name: betterprompts-test-api-gateway
+    environment:
+      - PORT=8090
+      - GIN_MODE=test
+      - DATABASE_URL=postgresql://betterprompts:betterprompts@test-postgres:5432/betterprompts_test?sslmode=disable
+      - REDIS_URL=test-redis:6379
+      - JWT_SECRET_KEY=test-secret-key
+      - JWT_REFRESH_SECRET_KEY=test-refresh-secret-key
+      - LOG_LEVEL=INFO
+      - INTENT_CLASSIFIER_URL=http://test-intent-classifier:8001
+      - TECHNIQUE_SELECTOR_URL=http://test-technique-selector:8002
+      - PROMPT_GENERATOR_URL=http://test-prompt-generator:8003
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://test-frontend:3000
+      - RATE_LIMIT_ENABLED=false  # Disable for tests
+    networks:
+      - test-network
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/v1/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Intent Classifier with test configuration
+  test-intent-classifier:
+    build:
+      context: .
+      dockerfile: docker/backend/intent-classifier/Dockerfile
+    container_name: betterprompts-test-intent-classifier
+    environment:
+      - ENVIRONMENT=test
+      - DATABASE_URL=postgresql://betterprompts:betterprompts@test-postgres:5432/betterprompts_test?sslmode=disable
+      - REDIS_URL=redis://test-redis:6379/0
+      - USE_TORCHSERVE=true
+      - TORCHSERVE_HOST=mock-torchserve
+      - TORCHSERVE_PORT=8080
+      - LOG_LEVEL=INFO
+    networks:
+      - test-network
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      mock-torchserve:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Technique Selector with test configuration
+  test-technique-selector:
+    build:
+      context: ./backend/services/technique-selector
+      dockerfile: ../../../docker/backend/technique-selector/Dockerfile
+    container_name: betterprompts-test-technique-selector
+    environment:
+      - GIN_MODE=test
+      - DATABASE_URL=postgresql://betterprompts:betterprompts@test-postgres:5432/betterprompts_test?sslmode=disable
+      - REDIS_URL=redis://test-redis:6379/1
+      - LOG_LEVEL=INFO
+    networks:
+      - test-network
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Prompt Generator with test configuration
+  test-prompt-generator:
+    build:
+      context: .
+      dockerfile: docker/backend/prompt-generator/Dockerfile
+    container_name: betterprompts-test-prompt-generator
+    environment:
+      - ENVIRONMENT=test
+      - DATABASE_URL=postgresql://betterprompts:betterprompts@test-postgres:5432/betterprompts_test?sslmode=disable
+      - REDIS_URL=redis://test-redis:6379/2
+      - OPENAI_API_KEY=test-api-key  # Mock key for tests
+      - ANTHROPIC_API_KEY=test-api-key  # Mock key for tests
+      - LOG_LEVEL=INFO
+      - USE_MOCK_LLM=true  # Use mock responses in tests
+    networks:
+      - test-network
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      test-technique-selector:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Frontend for integration tests
+  test-frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+      target: development
+    container_name: betterprompts-test-frontend
+    environment:
+      - NODE_ENV=test
+      - NEXT_PUBLIC_API_URL=http://test-nginx/api/v1
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Nginx for test environment
+  test-nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: betterprompts-test-nginx
+    volumes:
+      - ./docker/nginx/nginx.test.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    networks:
+      - test-network
+    depends_on:
+      test-frontend:
+        condition: service_healthy
+      test-api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Integration Test Runner
+  integration-test-runner:
+    build:
+      context: ./tests
+      dockerfile: Dockerfile.testrunner
+    container_name: betterprompts-integration-tests
+    environment:
+      - FRONTEND_URL=http://test-nginx
+      - API_GATEWAY_URL=http://test-nginx/api/v1
+      - DATABASE_URL=postgresql://betterprompts:betterprompts@test-postgres:5432/betterprompts_test?sslmode=disable
+      - REDIS_URL=redis://test-redis:6379
+      - TEST_TYPE=integration
+    volumes:
+      - ./tests:/tests
+      - ./test-results:/test-results
+    networks:
+      - test-network
+    depends_on:
+      test-nginx:
+        condition: service_healthy
+      test-api-gateway:
+        condition: service_healthy
+      test-intent-classifier:
+        condition: service_healthy
+      test-technique-selector:
+        condition: service_healthy
+      test-prompt-generator:
+        condition: service_healthy
+    command: |
+      sh -c "
+        echo 'Waiting for all services to be ready...'
+        sleep 10
+        
+        echo 'Running Go integration tests...'
+        cd /tests/integration/go && go test -v -tags=integration ./... -json > /test-results/go-integration.json
+        
+        echo 'Running Python integration tests...'
+        cd /tests/integration/python && python -m pytest -v --json-report --json-report-file=/test-results/python-integration.json
+        
+        echo 'Running Frontend integration tests...'
+        cd /tests/integration/frontend && npm test -- --reporter=json > /test-results/frontend-integration.json
+        
+        echo 'Integration tests completed!'
+      "
+
+networks:
+  test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+volumes:
+  test-postgres-data:
+  test-redis-data:

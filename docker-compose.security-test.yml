@@ -1,0 +1,192 @@
+version: '3.8'
+
+services:
+  # Security testing environment
+  security-test-runner:
+    build:
+      context: .
+      dockerfile: docker/security-test/Dockerfile
+    container_name: security-test-runner
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_ENV=test
+      - SECURITY_TEST_MODE=true
+    networks:
+      - security-test-net
+    depends_on:
+      - test-db
+      - test-redis
+      - api-gateway-test
+      - frontend-test
+
+  # Test database with security configurations
+  test-db:
+    image: postgres:16-alpine
+    container_name: test-postgres-security
+    environment:
+      - POSTGRES_DB=betterprompts_test
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+      # Security settings
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=scram-sha-256
+    volumes:
+      - ./infrastructure/database/security-test-init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - security-test-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d betterprompts_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Test Redis with security
+  test-redis:
+    image: redis:7-alpine
+    container_name: test-redis-security
+    command: >
+      redis-server
+      --requirepass test_redis_password
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    networks:
+      - security-test-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "test_redis_password", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # API Gateway for security testing
+  api-gateway-test:
+    build:
+      context: ./backend/services/api-gateway
+      dockerfile: Dockerfile
+      target: test
+    container_name: api-gateway-security-test
+    environment:
+      - ENV=test
+      - DB_HOST=test-db
+      - DB_PORT=5432
+      - DB_NAME=betterprompts_test
+      - DB_USER=test_user
+      - DB_PASSWORD=test_password
+      - REDIS_HOST=test-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=test_redis_password
+      - JWT_SECRET=test_jwt_secret_key_for_security_testing
+      - JWT_REFRESH_SECRET=test_jwt_refresh_secret_key_for_security_testing
+      # Security test flags
+      - ENABLE_SECURITY_HEADERS=true
+      - ENABLE_RATE_LIMITING=true
+      - ENABLE_CSRF_PROTECTION=true
+      - LOG_SECURITY_EVENTS=true
+    ports:
+      - "8080:8080"
+    networks:
+      - security-test-net
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    volumes:
+      - ./tests/security/certs:/app/certs:ro
+
+  # Frontend for security testing
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: test
+    container_name: frontend-security-test
+    environment:
+      - NODE_ENV=test
+      - NEXT_PUBLIC_API_URL=http://api-gateway-test:8080
+      - NEXT_PUBLIC_ENABLE_CSP=true
+      - NEXT_PUBLIC_ENABLE_SECURITY_HEADERS=true
+    ports:
+      - "3000:3000"
+    networks:
+      - security-test-net
+    depends_on:
+      - api-gateway-test
+
+  # OWASP ZAP for dynamic security testing
+  zap:
+    image: owasp/zap2docker-stable
+    container_name: zap-security-scanner
+    command: zap.sh -daemon -port 8090 -host 0.0.0.0 -config api.disablekey=true
+    ports:
+      - "8090:8090"
+    networks:
+      - security-test-net
+    volumes:
+      - ./tests/security/zap:/zap/wrk:rw
+    user: root
+
+  # Trivy for container scanning
+  trivy:
+    image: aquasec/trivy:latest
+    container_name: trivy-scanner
+    command: server --listen 0.0.0.0:8091
+    ports:
+      - "8091:8091"
+    networks:
+      - security-test-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - trivy-cache:/root/.cache/
+
+  # SQLMap for SQL injection testing
+  sqlmap:
+    build:
+      context: .
+      dockerfile: docker/security-test/sqlmap.Dockerfile
+    container_name: sqlmap-scanner
+    networks:
+      - security-test-net
+    volumes:
+      - ./tests/security/sqlmap:/sqlmap/output:rw
+    depends_on:
+      - api-gateway-test
+
+  # Security test orchestrator
+  test-orchestrator:
+    build:
+      context: .
+      dockerfile: docker/security-test/orchestrator.Dockerfile
+    container_name: security-test-orchestrator
+    environment:
+      - API_URL=http://api-gateway-test:8080
+      - FRONTEND_URL=http://frontend-test:3000
+      - ZAP_URL=http://zap:8090
+      - TRIVY_URL=http://trivy:8091
+    networks:
+      - security-test-net
+    volumes:
+      - ./tests/security/reports:/reports:rw
+      - ./tests/security/scripts:/scripts:ro
+    depends_on:
+      - api-gateway-test
+      - frontend-test
+      - zap
+      - trivy
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 30 &&
+        echo 'Running security test suite...' &&
+        node /scripts/security-test-runner.js
+      "
+
+networks:
+  security-test-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  trivy-cache:

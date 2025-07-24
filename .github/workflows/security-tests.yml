@@ -1,0 +1,260 @@
+name: Security Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run security tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.21'
+  NODE_VERSION: '20'
+
+jobs:
+  backend-security:
+    name: Backend Security Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          
+      - name: Install security tools
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          go install github.com/sonatype-nexus-community/nancy@latest
+          
+      - name: Run Go security tests
+        working-directory: backend/services/api-gateway
+        run: |
+          go test -v ./tests/security/... -coverprofile=coverage.out
+          
+      - name: Run GoSec
+        working-directory: backend/services/api-gateway
+        run: |
+          gosec -fmt json -out gosec-report.json ./...
+        continue-on-error: true
+        
+      - name: Run Staticcheck
+        working-directory: backend/services/api-gateway
+        run: |
+          staticcheck -f json ./... > staticcheck-report.json
+        continue-on-error: true
+        
+      - name: Check Go dependencies
+        working-directory: backend/services/api-gateway
+        run: |
+          go list -json -m all | nancy sleuth
+        continue-on-error: true
+        
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-security-reports
+          path: |
+            backend/services/api-gateway/gosec-report.json
+            backend/services/api-gateway/staticcheck-report.json
+            backend/services/api-gateway/coverage.out
+
+  frontend-security:
+    name: Frontend Security Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Install dependencies
+        working-directory: frontend
+        run: |
+          npm ci
+          npm install --save-dev eslint-plugin-security @microsoft/eslint-plugin-sdl
+          
+      - name: Run frontend security tests
+        working-directory: frontend
+        run: |
+          npm run test:security -- --coverage
+        continue-on-error: true
+        
+      - name: Run ESLint security checks
+        working-directory: frontend
+        run: |
+          npx eslint --ext .ts,.tsx --plugin security --format json -o eslint-security-report.json src/
+        continue-on-error: true
+        
+      - name: Run npm audit
+        working-directory: frontend
+        run: |
+          npm audit --json > npm-audit-report.json
+        continue-on-error: true
+        
+      - name: Check for known vulnerabilities
+        working-directory: frontend
+        run: |
+          npx snyk test --json > snyk-report.json
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-security-reports
+          path: |
+            frontend/eslint-security-report.json
+            frontend/npm-audit-report.json
+            frontend/snyk-report.json
+            frontend/coverage/
+
+  container-security:
+    name: Container Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Build containers
+        run: |
+          docker-compose build
+          
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: 'betterprompts/api-gateway:latest'
+          format: 'json'
+          output: 'trivy-api-gateway-report.json'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          
+      - name: Run Trivy on frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: 'betterprompts/frontend:latest'
+          format: 'json'
+          output: 'trivy-frontend-report.json'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          
+      - name: Upload container scan reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: container-security-reports
+          path: |
+            trivy-api-gateway-report.json
+            trivy-frontend-report.json
+
+  integration-security:
+    name: Integration Security Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: betterprompts_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Compose
+        run: |
+          docker-compose -f docker-compose.security-test.yml build
+          
+      - name: Run security test suite
+        run: |
+          docker-compose -f docker-compose.security-test.yml up --abort-on-container-exit
+        env:
+          DB_HOST: localhost
+          REDIS_HOST: localhost
+          
+      - name: Run OWASP ZAP baseline scan
+        run: |
+          docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable \
+            zap-baseline.py -t http://localhost:3000 -J zap-baseline-report.json
+        continue-on-error: true
+        
+      - name: Upload integration test reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-security-reports
+          path: |
+            tests/security/reports/
+            zap-baseline-report.json
+
+  security-summary:
+    name: Security Summary Report
+    needs: [backend-security, frontend-security, container-security, integration-security]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        
+      - name: Generate summary report
+        run: |
+          cd tests/security
+          npm install
+          node generate-summary-report.js
+          
+      - name: Upload summary report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-summary
+          path: tests/security/reports/security-summary.html
+          
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('tests/security/reports/security-summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+            
+      - name: Fail if critical issues found
+        run: |
+          if grep -q "critical" tests/security/reports/security-summary.json; then
+            echo "Critical security issues found!"
+            exit 1
+          fi

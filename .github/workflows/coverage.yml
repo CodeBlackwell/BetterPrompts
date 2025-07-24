@@ -1,0 +1,350 @@
+name: Coverage Report
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.23'
+  NODE_VERSION: '22'
+  PYTHON_VERSION: '3.11'
+  COVERAGE_THRESHOLD: 80
+
+jobs:
+  # Go Coverage Jobs
+  go-coverage:
+    name: Go Coverage
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - technique-selector
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ matrix.service }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.service }}-
+            
+      - name: Run tests with coverage
+        working-directory: backend/services/${{ matrix.service }}
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+          go tool cover -func=coverage.out
+          
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-go-${{ matrix.service }}
+          path: backend/services/${{ matrix.service }}/coverage.out
+          retention-days: 1
+
+  # Python Coverage Jobs
+  python-coverage:
+    name: Python Coverage
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - intent-classifier
+          - prompt-generator
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.service }}-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.service }}-
+            
+      - name: Install dependencies
+        working-directory: backend/services/${{ matrix.service }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          
+      - name: Run tests with coverage
+        working-directory: backend/services/${{ matrix.service }}
+        run: |
+          pytest --cov=app --cov-report=xml --cov-report=term --cov-fail-under=${{ env.COVERAGE_THRESHOLD }}
+          
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-python-${{ matrix.service }}
+          path: backend/services/${{ matrix.service }}/coverage.xml
+          retention-days: 1
+
+  # Frontend Coverage Job
+  frontend-coverage:
+    name: Frontend Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+        
+      - name: Run tests with coverage
+        working-directory: frontend
+        run: |
+          npm test -- --coverage --watchAll=false --passWithNoTests
+          
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-frontend
+          path: frontend/coverage/lcov.info
+          retention-days: 1
+
+  # Aggregate Coverage
+  aggregate-coverage:
+    name: Aggregate Coverage
+    runs-on: ubuntu-latest
+    needs: [go-coverage, python-coverage, frontend-coverage]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage-artifacts
+          
+      - name: Organize coverage files
+        run: |
+          # Create directory structure
+          mkdir -p backend/services/api-gateway
+          mkdir -p backend/services/technique-selector
+          mkdir -p backend/services/intent-classifier
+          mkdir -p backend/services/prompt-generator
+          mkdir -p frontend/coverage
+          
+          # Move coverage files to correct locations
+          [ -f coverage-artifacts/coverage-go-api-gateway/coverage.out ] && \
+            cp coverage-artifacts/coverage-go-api-gateway/coverage.out backend/services/api-gateway/
+          [ -f coverage-artifacts/coverage-go-technique-selector/coverage.out ] && \
+            cp coverage-artifacts/coverage-go-technique-selector/coverage.out backend/services/technique-selector/
+          [ -f coverage-artifacts/coverage-python-intent-classifier/coverage.xml ] && \
+            cp coverage-artifacts/coverage-python-intent-classifier/coverage.xml backend/services/intent-classifier/
+          [ -f coverage-artifacts/coverage-python-prompt-generator/coverage.xml ] && \
+            cp coverage-artifacts/coverage-python-prompt-generator/coverage.xml backend/services/prompt-generator/
+          [ -f coverage-artifacts/coverage-frontend/lcov.info ] && \
+            cp coverage-artifacts/coverage-frontend/lcov.info frontend/coverage/
+            
+      - name: Install coverage tools
+        run: |
+          pip install coverage
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+          
+      - name: Generate unified coverage report
+        run: |
+          python scripts/coverage-aggregator.py --format markdown --output COVERAGE_REPORT.md
+          python scripts/coverage-aggregator.py --format json --output coverage-summary.json
+          
+          # Display coverage summary
+          echo "## Coverage Summary"
+          python scripts/coverage-aggregator.py --format text
+          
+      - name: Check coverage thresholds
+        run: |
+          # Extract total coverage from JSON
+          TOTAL_COVERAGE=$(jq -r '.total_coverage' coverage-summary.json)
+          echo "Total Coverage: ${TOTAL_COVERAGE}%"
+          
+          # Check if it meets threshold
+          if (( $(echo "$TOTAL_COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
+            echo "❌ Coverage ${TOTAL_COVERAGE}% is below threshold ${COVERAGE_THRESHOLD}%"
+            exit 1
+          else
+            echo "✅ Coverage ${TOTAL_COVERAGE}% meets threshold ${COVERAGE_THRESHOLD}%"
+          fi
+          
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            COVERAGE_REPORT.md
+            coverage-summary.json
+          retention-days: 30
+          
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const coverageReport = fs.readFileSync('COVERAGE_REPORT.md', 'utf8');
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('## Coverage Report')
+            );
+            
+            const body = `## Coverage Report\n\n${coverageReport}\n\n*Generated at ${new Date().toISOString()}*`;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
+
+  # Upload to Codecov
+  codecov-upload:
+    name: Upload to Codecov
+    runs-on: ubuntu-latest
+    needs: aggregate-coverage
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage-artifacts
+          
+      - name: Organize coverage files for Codecov
+        run: |
+          mkdir -p coverage-reports
+          find coverage-artifacts -name "*.out" -o -name "*.xml" -o -name "*.info" | \
+            xargs -I {} cp {} coverage-reports/
+            
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./coverage-reports
+          fail_ci_if_error: false
+          flags: unittests
+          name: betterprompts-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
+
+  # Generate and commit badges (only on main branch)
+  update-badges:
+    name: Update Coverage Badges
+    runs-on: ubuntu-latest
+    needs: aggregate-coverage
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Download coverage summary
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports
+          path: .
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+          
+      - name: Generate badge data
+        run: |
+          # Extract coverage data
+          TOTAL_COVERAGE=$(jq -r '.total_coverage' coverage-summary.json)
+          
+          # Determine color based on coverage
+          if (( $(echo "$TOTAL_COVERAGE >= 80" | bc -l) )); then
+            COLOR="brightgreen"
+          elif (( $(echo "$TOTAL_COVERAGE >= 60" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          
+          # Create badges directory
+          mkdir -p badges
+          
+          # Download badge
+          curl -s "https://img.shields.io/badge/coverage-${TOTAL_COVERAGE}%25-${COLOR}" > badges/coverage.svg
+          
+          # Extract service-specific coverage
+          jq -r '.services | to_entries | .[] | "\(.key) \(.value.coverage // 0)"' coverage-summary.json | \
+          while read service coverage; do
+            if [ "$coverage" != "0" ]; then
+              # Determine color
+              if (( $(echo "$coverage >= 80" | bc -l) )); then
+                COLOR="brightgreen"
+              elif (( $(echo "$coverage >= 60" | bc -l) )); then
+                COLOR="yellow"
+              else
+                COLOR="red"
+              fi
+              
+              # Download service badge
+              curl -s "https://img.shields.io/badge/${service}-${coverage}%25-${COLOR}" > "badges/coverage-${service}.svg"
+            fi
+          done
+          
+      - name: Commit badges
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add badges/
+          git diff --staged --quiet || git commit -m "chore: update coverage badges [skip ci]"
+          git push

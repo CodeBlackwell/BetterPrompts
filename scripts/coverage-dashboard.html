@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetterPrompts Coverage Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card.total {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .metric-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .service-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .service-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .badge-go {
+            background: #00ADD8;
+            color: white;
+        }
+        
+        .badge-python {
+            background: #3776AB;
+            color: white;
+        }
+        
+        .badge-typescript {
+            background: #3178C6;
+            color: white;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-fill.high {
+            background: #4caf50;
+        }
+        
+        .progress-fill.medium {
+            background: #ff9800;
+        }
+        
+        .progress-fill.low {
+            background: #f44336;
+        }
+        
+        .coverage-details {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .charts-section {
+            margin: 40px 0;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .updated-time {
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #666;
+        }
+        
+        .status-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .status-icon.pass {
+            background: #4caf50;
+        }
+        
+        .status-icon.warn {
+            background: #ff9800;
+        }
+        
+        .status-icon.fail {
+            background: #f44336;
+        }
+        
+        @media (max-width: 768px) {
+            .metric-card.total {
+                grid-column: span 1;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>BetterPrompts Coverage Dashboard</h1>
+            <p class="subtitle">Unified Test Coverage Across All Services</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="metrics-grid">
+            <div class="metric-card total">
+                <div class="metric-label">Total Coverage</div>
+                <div class="metric-value" id="total-coverage">--</div>
+                <div class="metric-label" id="total-lines">-- lines covered</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Go Services</div>
+                <div class="metric-value" id="go-coverage">--</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Python Services</div>
+                <div class="metric-value" id="python-coverage">--</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Frontend</div>
+                <div class="metric-value" id="frontend-coverage">--</div>
+            </div>
+        </div>
+        
+        <h2 style="margin: 40px 0 20px 0;">Service Coverage Details</h2>
+        
+        <div class="service-grid" id="services-grid">
+            <!-- Service cards will be dynamically added here -->
+        </div>
+        
+        <div class="charts-section">
+            <h2 style="margin-bottom: 20px;">Coverage Trends</h2>
+            <div class="chart-container">
+                <canvas id="coverage-chart"></canvas>
+            </div>
+        </div>
+        
+        <p class="updated-time">Last updated: <span id="update-time">--</span></p>
+    </div>
+    
+    <footer>
+        <p>BetterPrompts &copy; 2025 | <a href="/coverage-report.md">View Detailed Report</a></p>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Function to load coverage data
+        async function loadCoverageData() {
+            try {
+                const response = await fetch('/coverage.json');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Failed to load coverage data:', error);
+                showError();
+            }
+        }
+        
+        // Function to determine coverage level
+        function getCoverageLevel(coverage) {
+            if (coverage >= 80) return 'high';
+            if (coverage >= 60) return 'medium';
+            return 'low';
+        }
+        
+        // Function to update dashboard
+        function updateDashboard(data) {
+            // Update total coverage
+            document.getElementById('total-coverage').textContent = `${data.total_coverage.toFixed(1)}%`;
+            document.getElementById('total-lines').textContent = 
+                `${data.covered_lines.toLocaleString()} / ${data.total_lines.toLocaleString()} lines covered`;
+            
+            // Calculate language-specific coverage
+            let goTotal = 0, goCount = 0;
+            let pythonTotal = 0, pythonCount = 0;
+            let jsTotal = 0, jsCount = 0;
+            
+            // Update service cards
+            const servicesGrid = document.getElementById('services-grid');
+            servicesGrid.innerHTML = '';
+            
+            for (const [service, details] of Object.entries(data.services)) {
+                if (details.error) continue;
+                
+                const coverage = details.coverage || 0;
+                const language = details.language || 'Unknown';
+                
+                // Update language totals
+                if (language === 'Go') {
+                    goTotal += coverage;
+                    goCount++;
+                } else if (language === 'Python') {
+                    pythonTotal += coverage;
+                    pythonCount++;
+                } else if (language.includes('JavaScript')) {
+                    jsTotal += coverage;
+                    jsCount++;
+                }
+                
+                // Create service card
+                const card = createServiceCard(service, details);
+                servicesGrid.appendChild(card);
+            }
+            
+            // Update language averages
+            document.getElementById('go-coverage').textContent = 
+                goCount > 0 ? `${(goTotal / goCount).toFixed(1)}%` : 'N/A';
+            document.getElementById('python-coverage').textContent = 
+                pythonCount > 0 ? `${(pythonTotal / pythonCount).toFixed(1)}%` : 'N/A';
+            document.getElementById('frontend-coverage').textContent = 
+                jsCount > 0 ? `${(jsTotal / jsCount).toFixed(1)}%` : 'N/A';
+            
+            // Update timestamp
+            document.getElementById('update-time').textContent = new Date().toLocaleString();
+            
+            // Create coverage chart
+            createCoverageChart(data);
+        }
+        
+        // Function to create service card
+        function createServiceCard(name, details) {
+            const card = document.createElement('div');
+            card.className = 'service-card';
+            
+            const coverage = details.coverage || 0;
+            const level = getCoverageLevel(coverage);
+            const languageClass = details.language.toLowerCase().replace(/[^a-z]/g, '');
+            
+            card.innerHTML = `
+                <div class="service-header">
+                    <span class="service-name">
+                        <span class="status-icon ${level === 'high' ? 'pass' : level === 'medium' ? 'warn' : 'fail'}"></span>
+                        ${name}
+                    </span>
+                    <span class="service-badge badge-${languageClass}">${details.language}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill ${level}" style="width: ${coverage}%">
+                        ${coverage.toFixed(1)}%
+                    </div>
+                </div>
+                ${details.lines_total ? `
+                <div class="coverage-details">
+                    <div class="detail-item">
+                        <span>Lines Covered:</span>
+                        <span>${details.lines_covered.toLocaleString()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Total Lines:</span>
+                        <span>${details.lines_total.toLocaleString()}</span>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            return card;
+        }
+        
+        // Function to create coverage chart
+        function createCoverageChart(data) {
+            const ctx = document.getElementById('coverage-chart').getContext('2d');
+            
+            // Sample data - in real implementation, this would come from historical data
+            const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Current'];
+            const datasets = [];
+            
+            // Add total coverage line
+            datasets.push({
+                label: 'Total Coverage',
+                data: [75, 78, 82, 85, data.total_coverage],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.2
+            });
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Coverage Trend Over Time'
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to show error state
+        function showError() {
+            document.getElementById('total-coverage').textContent = 'Error';
+            document.getElementById('update-time').textContent = 'Failed to load data';
+        }
+        
+        // Load data on page load
+        window.addEventListener('DOMContentLoaded', loadCoverageData);
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadCoverageData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
