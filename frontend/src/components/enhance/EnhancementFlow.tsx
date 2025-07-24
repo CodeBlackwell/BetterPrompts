@@ -6,6 +6,7 @@ import { Send, Sparkles, ChevronDown, AlertCircle, WifiOff, X, RefreshCw } from 
 import TechniqueCard from './TechniqueCard'
 import TechniqueCardSkeleton from './TechniqueCardSkeleton'
 import StreamingProgress, { ENHANCEMENT_STEPS, StreamingStep } from './StreamingProgress'
+import EnhancedPromptOutput from './EnhancedPromptOutput'
 import { cn } from '@/lib/utils'
 import { useEnhance, useTechniques } from '@/hooks/useEnhance'
 import { useApiStatus } from '@/hooks/useApiStatus'
@@ -32,6 +33,8 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
   // Store state
   const {
     streaming,
+    currentOutput,
+    currentInput,
     setCurrentInput,
     setCurrentOutput,
     updateStreamingStep,
@@ -388,6 +391,20 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Enhanced Prompt Output */}
+      <AnimatePresence>
+        {streaming.currentStep === 'complete' && currentOutput && (
+          <EnhancedPromptOutput
+            enhancedPrompt={currentOutput}
+            originalPrompt={userInput}
+            techniqueUsed={selectedTechnique || enhancedTechniques[0]}
+            className="mt-6"
+            onRegenerate={handleEnhance}
+            showComparison={true}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -1,4 +1,5 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios'
+import axios from 'redaxios'
+import type { AxiosError, AxiosInstance, AxiosRequestConfig } from 'redaxios'
 import { useUserStore } from '@/store/useUserStore'
 
 // Determine API URL based on environment

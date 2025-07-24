@@ -1,4 +1,6 @@
 import { apiClient } from './client'
+import { cachedApiClient, cachedApi } from './cached-client'
+import { hashText } from './cache'
 
 // Types
 export interface LoginRequest {
@@ -118,7 +120,7 @@ export const authService = {
     apiClient.post('/auth/verify-email', { token }),
   
   getProfile: () => 
-    apiClient.get('/auth/profile'),
+    cachedApi.getProfile(),
   
   updateProfile: (data: Partial<{ name: string; email: string }>) => 
     apiClient.put('/auth/profile', data),
@@ -140,9 +142,9 @@ export const promptService = {
   enhance: (data: EnhanceRequest) => 
     apiClient.post<EnhanceResponse>('/enhance', data),
   
-  // Get available techniques
+  // Get available techniques (cached for 30 minutes)
   getTechniques: () => 
-    apiClient.get<Technique[]>('/techniques'),
+    cachedApi.getTechniques(),
   
   // Select best techniques for a prompt
   selectTechniques: (data: { text: string; intent?: string; context?: any }) => 
@@ -152,7 +154,7 @@ export const promptService = {
 // History Services
 export const historyService = {
   getHistory: (params?: { page?: number; limit?: number; search?: string; filter?: string }) => 
-    apiClient.get<PromptHistoryItem[]>('/history', { params }),
+    cachedApi.getHistory(params?.page || 1, params?.limit || 10),
   
   getHistoryItem: (id: string) => 
     apiClient.get<PromptHistoryItem>(`/history/${id}`),
