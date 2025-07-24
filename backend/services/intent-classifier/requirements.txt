@@ -15,6 +15,7 @@ sentencepiece==0.1.99
 
 # Database
 asyncpg==0.29.0
+psycopg2-binary==2.9.9
 sqlalchemy==2.0.23
 alembic==1.13.0
 pgvector==0.2.4
