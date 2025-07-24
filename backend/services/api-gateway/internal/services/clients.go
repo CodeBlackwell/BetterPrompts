@@ -345,6 +345,26 @@ func (c *PromptGeneratorClient) GeneratePrompt(ctx context.Context, req models.P
 	return &result, nil
 }
 
+// WarmConnection pre-establishes connection to reduce latency
+func (c *PromptGeneratorClient) WarmConnection(ctx context.Context) error {
+	// Pre-establish HTTP/2 connection by making a lightweight request
+	httpReq, err := http.NewRequestWithContext(ctx, "GET", c.baseURL+"/health", nil)
+	if err != nil {
+		return err
+	}
+	
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		// Don't fail if warming fails, it's an optimization
+		return nil
+	}
+	defer resp.Body.Close()
+	
+	// Drain the response to ensure connection is established
+	io.Copy(io.Discard, resp.Body)
+	return nil
+}
+
 // Close closes all clients
 func (c *ServiceClients) Close() error {
 	if c.Database != nil {

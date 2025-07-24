@@ -105,6 +105,11 @@ func main() {
 			middleware.RateLimitMiddleware(clients.Cache, middleware.DefaultRateLimitConfig(), logger),
 			handlers.EnhancePrompt(clients))
 		
+		// Batch enhancement endpoint (commented out - not implemented yet)
+		// protected.POST("/enhance/batch",
+		// 	middleware.RateLimitMiddleware(clients.Cache, middleware.DefaultRateLimitConfig(), logger),
+		// 	handlers.HandleBatchEnhance(clients))
+		
 		// History endpoints
 		protected.GET("/history", handlers.GetPromptHistory(clients))
 		protected.GET("/history/:id", handlers.GetPromptHistoryItem(clients))
