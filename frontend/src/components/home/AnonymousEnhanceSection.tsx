@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 import Container from '@/components/layout/Container'
+import { cn } from '@/lib/utils'
 
 export default function AnonymousEnhanceSection() {
   const [prompt, setPrompt] = useState('')
@@ -11,9 +12,31 @@ export default function AnonymousEnhanceSection() {
   const [enhancedOutput, setEnhancedOutput] = useState('')
   const [error, setError] = useState('')
   const [techniques, setTechniques] = useState<string[]>([])
+  const [validationError, setValidationError] = useState('')
+  
+  // Match backend validation limits
+  const MIN_LENGTH = 1
+  const MAX_LENGTH = 5000
+
+  const validatePrompt = (text: string): boolean => {
+    const trimmed = text.trim()
+    
+    if (trimmed.length < MIN_LENGTH) {
+      setValidationError('Please enter a prompt to enhance')
+      return false
+    }
+    
+    if (trimmed.length > MAX_LENGTH) {
+      setValidationError(`Prompt must be less than ${MAX_LENGTH} characters`)
+      return false
+    }
+    
+    setValidationError('')
+    return true
+  }
 
   const handleEnhance = async () => {
-    if (!prompt.trim()) return
+    if (!validatePrompt(prompt)) return
     
     setIsLoading(true)
     setError('')
@@ -40,7 +63,6 @@ export default function AnonymousEnhanceSection() {
   }
 
   const characterCount = prompt.length
-  const characterLimit = 2000
 
   return (
     <section data-testid="homepage-enhance-section" className="py-20 sm:py-32 bg-gray-50">
@@ -76,17 +98,33 @@ export default function AnonymousEnhanceSection() {
                   data-testid="anonymous-prompt-input"
                   value={prompt}
                   onChange={(e) => {
-                    const newValue = e.target.value.slice(0, characterLimit);
-                    console.log('Setting prompt to:', newValue);
+                    const newValue = e.target.value;
                     setPrompt(newValue);
+                    // Clear validation error when user types
+                    if (validationError && newValue.trim()) {
+                      validatePrompt(newValue);
+                    }
                   }}
                   placeholder="Type your prompt here..."
-                  className="w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={cn(
+                    "w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2",
+                    validationError ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"
+                  )}
+                  maxLength={MAX_LENGTH + 100}
                   disabled={isLoading}
                 />
-                <div className="mt-2 text-sm text-gray-500 text-right">
-                  <span data-testid="anonymous-character-count">
-                    {characterCount}/{characterLimit}
+                <div className="mt-2 flex justify-between items-center">
+                  {validationError && (
+                    <div className="text-sm text-red-500 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      {validationError}
+                    </div>
+                  )}
+                  <span data-testid="anonymous-character-count" className={cn(
+                    "text-sm ml-auto",
+                    characterCount > MAX_LENGTH ? "text-red-500 font-medium" : "text-gray-500"
+                  )}>
+                    {characterCount}/{MAX_LENGTH}
                   </span>
                 </div>
               </div>
@@ -95,7 +133,7 @@ export default function AnonymousEnhanceSection() {
               <button
                 data-testid="anonymous-enhance-button"
                 onClick={handleEnhance}
-                disabled={!prompt.trim() || isLoading}
+                disabled={!prompt.trim() || isLoading || !!validationError}
                 className="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (

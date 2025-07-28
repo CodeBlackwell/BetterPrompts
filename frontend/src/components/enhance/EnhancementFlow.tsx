@@ -29,6 +29,11 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
   const [techniques, setTechniques] = useState<Technique[]>([])
   const [promptHistoryId, setPromptHistoryId] = useState<string | null>(null)
   const [enhancedTechniques, setEnhancedTechniques] = useState<string[]>([])
+  const [validationError, setValidationError] = useState<string | null>(null)
+  
+  // Constants for validation
+  const MAX_INPUT_LENGTH = 5000
+  const MIN_INPUT_LENGTH = 1
   
   // Store state
   const {
@@ -89,8 +94,26 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
     updateStreamingStep('complete', 100)
   }, [updateStreamingStep, completeStreamingStep, updateStreamingData])
 
+  // Input validation function
+  const validateInput = (input: string): boolean => {
+    const trimmedInput = input.trim()
+    
+    if (trimmedInput.length < MIN_INPUT_LENGTH) {
+      setValidationError('Please enter a prompt to enhance')
+      return false
+    }
+    
+    if (trimmedInput.length > MAX_INPUT_LENGTH) {
+      setValidationError(`Prompt must be less than ${MAX_INPUT_LENGTH} characters`)
+      return false
+    }
+    
+    setValidationError(null)
+    return true
+  }
+
   const handleEnhance = async () => {
-    if (!userInput.trim() || !isConnected) return
+    if (!validateInput(userInput) || !isConnected) return
 
     setShowTechniques(true)
     setCurrentInput(userInput)
@@ -128,8 +151,20 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
           })
         }
       }
-    } catch (error) {
-      setStreamingError(error instanceof Error ? error.message : 'Enhancement failed')
+    } catch (error: any) {
+      // Handle API validation errors
+      if (error.response?.status === 400 && error.response?.data?.details) {
+        const details = error.response.data.details
+        if (details.includes('min=1')) {
+          setValidationError('Please enter a prompt to enhance')
+        } else if (details.includes('max=5000')) {
+          setValidationError(`Prompt must be less than ${MAX_INPUT_LENGTH} characters`)
+        } else {
+          setValidationError('Invalid input. Please check your prompt and try again.')
+        }
+      } else {
+        setStreamingError(error instanceof Error ? error.message : 'Enhancement failed')
+      }
     } finally {
       setIsEnhancing(false)
     }
@@ -182,32 +217,57 @@ export default function EnhancementFlow({ className, onComplete }: EnhancementFl
           <textarea
             id="user-input"
             value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
+            onChange={(e) => {
+              const newValue = e.target.value
+              setUserInput(newValue)
+              // Clear validation error when user types
+              if (validationError) {
+                validateInput(newValue)
+              }
+            }}
             onKeyDown={handleKeyDown}
             placeholder="Enter your prompt here... (e.g., 'Help me write a blog post about sustainable living')"
-            className="w-full min-h-[120px] sm:min-h-[150px] p-3 sm:p-4 pr-12 text-sm sm:text-base border rounded-xl resize-none transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50"
+            className={cn(
+              "w-full min-h-[120px] sm:min-h-[150px] p-3 sm:p-4 pr-12 text-sm sm:text-base border rounded-xl resize-none transition-all focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50",
+              validationError ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"
+            )}
             disabled={isStreaming}
             aria-label="Prompt input"
-            aria-describedby="prompt-helper"
+            aria-describedby={validationError ? "input-error" : "prompt-helper"}
+            aria-invalid={!!validationError}
+            maxLength={MAX_INPUT_LENGTH + 100} // Allow slight overflow for better UX
           />
           <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 flex items-center gap-2">
+            <span className={cn(
+              "text-xs transition-colors",
+              userInput.length > MAX_INPUT_LENGTH ? "text-red-500 font-medium" : "text-gray-400"
+            )}>
+              {userInput.length}/{MAX_INPUT_LENGTH}
+            </span>
             <KeyboardIndicator keys={['Ctrl', 'Enter']} className="text-xs text-gray-400">
               <span className="hidden sm:inline">Submit</span>
             </KeyboardIndicator>
           </div>
         </div>
         
+        {validationError && (
+          <div id="input-error" className="mt-2 text-sm text-red-500" role="alert">
+            <AlertCircle className="inline-block w-4 h-4 mr-1" />
+            {validationError}
+          </div>
+        )}
+        
         <div id="prompt-helper" className="sr-only">
-          Press Control + Enter to submit your prompt for enhancement
+          Press Control + Enter to submit your prompt for enhancement. Maximum {MAX_INPUT_LENGTH} characters.
         </div>
         
         <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:justify-between">
           <button
             onClick={handleEnhance}
-            disabled={!userInput.trim() || isStreaming || !isConnected}
+            disabled={!userInput.trim() || isStreaming || !isConnected || !!validationError}
             className={cn(
               "btn-primary w-full sm:w-auto justify-center",
-              (isStreaming || !isConnected) && "cursor-not-allowed opacity-50"
+              (isStreaming || !isConnected || !!validationError) && "cursor-not-allowed opacity-50"
             )}
             aria-busy={isStreaming}
           >
