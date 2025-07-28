@@ -1,0 +1,819 @@
+{
+  "info": {
+    "name": "BetterPrompts API",
+    "description": "Complete API collection for BetterPrompts - AI-powered prompt enhancement platform.\n\nThis collection includes all endpoints with example requests and test scripts.\n\n## Getting Started\n\n1. Set your API key in the collection variables\n2. Select an environment (Development or Production)\n3. Start with the Authentication folder to get a bearer token\n4. Explore the API endpoints\n\n## Support\n\nEmail: support@betterprompts.io\nDocs: https://docs.betterprompts.io",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{api_key}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Add request ID for tracking",
+          "pm.variables.set('request_id', pm.variables.replaceIn('{{$guid}}'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for all requests",
+          "pm.test(\"Response time is less than 1000ms\", function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+          "});",
+          "",
+          "// Check for rate limit headers",
+          "if (pm.response.headers.has('X-RateLimit-Limit')) {",
+          "    pm.test(\"Rate limit headers present\", function () {",
+          "        pm.response.to.have.header('X-RateLimit-Limit');",
+          "        pm.response.to.have.header('X-RateLimit-Remaining');",
+          "        pm.response.to.have.header('X-RateLimit-Reset');",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "your-api-key-here",
+      "type": "string"
+    },
+    {
+      "key": "bearer_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_email",
+      "value": "test@example.com",
+      "type": "string"
+    },
+    {
+      "key": "user_password",
+      "value": "TestPassword123!",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{user_email}}\",\n    \"password\": \"{{user_password}}\",\n    \"name\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has access token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "    pm.expect(jsonData).to.have.property('refresh_token');",
+                  "    ",
+                  "    // Save tokens for other requests",
+                  "    pm.collectionVariables.set('bearer_token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{user_email}}\",\n    \"password\": \"{{user_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login to get bearer token"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Refresh access token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Get current user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout and invalidate token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Enhancement",
+      "item": [
+        {
+          "name": "Enhance Prompt - Simple",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('original_text');",
+                  "    pm.expect(jsonData).to.have.property('enhanced_text');",
+                  "    pm.expect(jsonData).to.have.property('techniques_used');",
+                  "    pm.expect(jsonData.techniques_used).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Save enhancement ID for other requests",
+                  "pm.collectionVariables.set('last_enhancement_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text\": \"Write a function to sort an array\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/enhance",
+              "host": ["{{base_url}}"],
+              "path": ["enhance"]
+            },
+            "description": "Basic prompt enhancement"
+          },
+          "response": []
+        },
+        {
+          "name": "Enhance Prompt - With Options",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text\": \"Explain the difference between TCP and UDP\",\n    \"context\": {\n        \"audience\": \"beginner\",\n        \"purpose\": \"educational\"\n    },\n    \"prefer_techniques\": [\"analogies\", \"examples\"],\n    \"exclude_techniques\": [\"technical_jargon\"],\n    \"target_complexity\": \"simple\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/enhance",
+              "host": ["{{base_url}}"],
+              "path": ["enhance"]
+            },
+            "description": "Enhancement with all optional parameters"
+          },
+          "response": []
+        },
+        {
+          "name": "Batch Enhancement",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requests\": [\n        {\n            \"text\": \"How do I implement a binary search tree?\",\n            \"prefer_techniques\": [\"step_by_step\", \"code_examples\"]\n        },\n        {\n            \"text\": \"What are the main principles of clean architecture?\",\n            \"exclude_techniques\": [\"analogies\"]\n        },\n        {\n            \"text\": \"Explain machine learning to a beginner\",\n            \"target_complexity\": \"simple\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/batch",
+              "host": ["{{base_url}}"],
+              "path": ["batch"]
+            },
+            "description": "Process multiple prompts asynchronously (requires auth)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Techniques",
+      "item": [
+        {
+          "name": "Get All Techniques",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Each technique has required fields\", function () {",
+                  "    var techniques = pm.response.json();",
+                  "    techniques.forEach(function(technique) {",
+                  "        pm.expect(technique).to.have.property('id');",
+                  "        pm.expect(technique).to.have.property('name');",
+                  "        pm.expect(technique).to.have.property('category');",
+                  "        pm.expect(technique).to.have.property('effectiveness');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/techniques",
+              "host": ["{{base_url}}"],
+              "path": ["techniques"]
+            },
+            "description": "List all available techniques"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Techniques by Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/techniques?category=reasoning",
+              "host": ["{{base_url}}"],
+              "path": ["techniques"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "reasoning",
+                  "description": "Options: reasoning, creative, analytical, instructional"
+                }
+              ]
+            },
+            "description": "Filter techniques by category"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Techniques by Complexity",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/techniques?complexity=2",
+              "host": ["{{base_url}}"],
+              "path": ["techniques"],
+              "query": [
+                {
+                  "key": "complexity",
+                  "value": "2",
+                  "description": "Complexity level 1-5"
+                }
+              ]
+            },
+            "description": "Filter techniques by complexity level"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "History",
+      "item": [
+        {
+          "name": "Get History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has pagination\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData).to.have.property('total');",
+                  "    pm.expect(jsonData).to.have.property('page');",
+                  "    pm.expect(jsonData).to.have.property('limit');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get paginated prompt history"
+          },
+          "response": []
+        },
+        {
+          "name": "Get History with Filters",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history?intent=code_generation&sort_by=created_at&sort_order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["history"],
+              "query": [
+                {
+                  "key": "intent",
+                  "value": "code_generation"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "created_at"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01T00:00:00Z",
+                  "disabled": true
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-12-31T23:59:59Z",
+                  "disabled": true
+                },
+                {
+                  "key": "technique",
+                  "value": "chain_of_thought",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get history with various filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get History Item",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history/{{last_enhancement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["history", "{{last_enhancement_id}}"]
+            },
+            "description": "Get specific history item"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete History Item",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/history/{{last_enhancement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["history", "{{last_enhancement_id}}"]
+            },
+            "description": "Soft delete a history item"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Usage Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["stats"]
+            },
+            "description": "Get usage statistics and metrics"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Create Webhook",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has webhook details\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('secret');",
+                  "    ",
+                  "    // Save for other requests",
+                  "    pm.collectionVariables.set('webhook_id', jsonData.id);",
+                  "    pm.collectionVariables.set('webhook_secret', jsonData.secret);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"url\": \"https://your-app.com/webhook\",\n    \"events\": [\"enhancement.completed\", \"batch.finished\"],\n    \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/webhooks",
+              "host": ["{{base_url}}"],
+              "path": ["webhooks"]
+            },
+            "description": "Register a new webhook endpoint"
+          },
+          "response": []
+        },
+        {
+          "name": "List Webhooks",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/webhooks",
+              "host": ["{{base_url}}"],
+              "path": ["webhooks"]
+            },
+            "description": "Get all registered webhooks"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Webhook",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"events\": [\"enhancement.completed\", \"batch.finished\", \"error.occurred\"],\n    \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/webhooks/{{webhook_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["webhooks", "{{webhook_id}}"]
+            },
+            "description": "Update webhook configuration"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Webhook",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/webhooks/{{webhook_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["webhooks", "{{webhook_id}}"]
+            },
+            "description": "Delete a webhook"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Examples",
+      "item": [
+        {
+          "name": "400 Bad Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/enhance",
+              "host": ["{{base_url}}"],
+              "path": ["enhance"]
+            },
+            "description": "Example of validation error"
+          },
+          "response": []
+        },
+        {
+          "name": "401 Unauthorized",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history",
+              "host": ["{{base_url}}"],
+              "path": ["history"]
+            },
+            "description": "Example of missing authentication"
+          },
+          "response": []
+        },
+        {
+          "name": "404 Not Found",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history/non-existent-id",
+              "host": ["{{base_url}}"],
+              "path": ["history", "non-existent-id"]
+            },
+            "description": "Example of resource not found"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
