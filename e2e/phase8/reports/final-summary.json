@@ -1,9 +1,14 @@
 {
-  "timestamp": "2025-07-28T16:45:39.802Z",
+  "timestamp": "2025-07-28T17:53:58.691Z",
   "environment": "test",
   "baseUrl": "http://localhost:3000",
   "summary": {
-    "e2e_tests": {},
+    "e2e_tests": {
+      "total": 0,
+      "passed": -1,
+      "failed": 1,
+      "skipped": 0
+    },
     "load_tests": {},
     "sla_compliance": {}
   }

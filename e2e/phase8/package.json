@@ -19,7 +19,8 @@
     "validate": "npm run test:sla && npm run k6:local"
   },
   "dependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.40.0",
+    "bcryptjs": "^3.0.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

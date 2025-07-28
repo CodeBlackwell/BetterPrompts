@@ -1,14 +1,18 @@
 import { Page } from '@playwright/test';
+import { unlockUser } from '../utils/unlock-users';
 
 export class AdminPage {
   constructor(private page: Page) {}
 
   async loginAsAdmin() {
-    await this.page.goto('/login');
-    
     // Use admin credentials from environment or test data
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@betterprompts.ai';
     const adminPassword = process.env.ADMIN_PASSWORD || 'password123';
+    
+    // Ensure admin account is unlocked before attempting login
+    await unlockUser(adminEmail);
+    
+    await this.page.goto('/login');
     
     await this.page.fill('[data-testid="email-input"]', adminEmail);
     await this.page.fill('[data-testid="password-input"]', adminPassword);

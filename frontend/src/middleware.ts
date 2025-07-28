@@ -54,7 +54,10 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for auth token in cookies (set by API)
-  const token = request.cookies.get('auth_token')?.value
+  // Note: The backend might use different cookie names, so we check multiple possibilities
+  const token = request.cookies.get('auth_token')?.value || 
+                request.cookies.get('access_token')?.value ||
+                request.cookies.get('token')?.value
 
   // If accessing a protected route without a token, redirect to login
   const isProtectedRoute = protectedRoutes.some(route => 
@@ -65,7 +68,7 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     // Add redirect param to return user to requested page after login
-    url.searchParams.set('redirect', pathname)
+    url.searchParams.set('from', pathname)
     return NextResponse.redirect(url)
   }
 

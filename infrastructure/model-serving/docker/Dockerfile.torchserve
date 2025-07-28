@@ -23,8 +23,15 @@ WORKDIR /home/model-server
 # Copy requirements
 COPY requirements-serving.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements-serving.txt
+# Install Python dependencies with increased timeout and retry
+# Split large packages to avoid timeout issues
+RUN pip install --no-cache-dir --timeout=300 --retries=5 \
+    torch==2.1.0 \
+    torchvision==0.16.0 \
+    && pip install --no-cache-dir --timeout=300 --retries=5 \
+    onnxruntime-gpu==1.16.3 \
+    && pip install --no-cache-dir --timeout=300 --retries=5 \
+    -r requirements-serving.txt
 
 # Copy model artifacts and handlers
 COPY torchserve/handlers /home/model-server/handlers

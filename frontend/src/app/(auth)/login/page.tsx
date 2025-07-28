@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { debugAuth } from '@/utils/debug-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -53,6 +54,10 @@ export default function LoginPage() {
       // Store auth data
       setToken(response.access_token, response.refresh_token)
       setUser(response.user)
+      
+      // Set auth cookie for middleware (in case backend doesn't set it)
+      // Note: This is a client-side cookie, server-side cookies should be set by the backend
+      document.cookie = `auth_token=${response.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`
 
       // Show success message
       toast({
@@ -60,12 +65,36 @@ export default function LoginPage() {
         description: `Logged in as ${response.user.email}`,
       })
 
-      // Redirect to dashboard or previous page
-      const redirectTo = new URLSearchParams(window.location.search).get('from') || '/'
-      router.push(redirectTo)
+      // Add debugging
+      console.log('Login response:', response)
+      console.log('User roles:', response.user.roles)
+      console.log('Is admin?', response.user.roles?.includes('admin'))
+
+      // Redirect based on user role
+      const redirectTo = new URLSearchParams(window.location.search).get('from')
+      
+      // Check if user is admin and redirect accordingly
+      const targetPath = response.user.roles?.includes('admin') 
+        ? (redirectTo || '/admin/analytics')
+        : (redirectTo || '/dashboard')
+      
+      console.log('Redirecting to:', targetPath)
+      
+      // Ensure state updates are complete before navigation
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Try router.push first (preferred for SPA navigation)
+      try {
+        await router.push(targetPath)
+        console.log('Router navigation successful')
+      } catch (routerError) {
+        console.error('Router navigation failed:', routerError)
+        // Fallback to window.location for guaranteed navigation
+        window.location.href = targetPath
+      }
     } catch (err: any) {
       console.error('Login error:', err)
-      setError(err.response?.data?.error || 'Invalid email or password. Please try again.')
+      setError(err.response?.data?.error || err.message || 'Invalid email or password. Please try again.')
     } finally {
       setIsLoading(false)
     }

@@ -38,7 +38,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MODEL_NAME=microsoft/deberta-v3-base
       - LOG_LEVEL=DEBUG
-      - USE_TORCHSERVE=false
+      - USE_TORCHSERVE=true
       - TORCHSERVE_HOST=torchserve
       - TORCHSERVE_PORT=8080
       - PYTHONPATH=/app

@@ -19,7 +19,14 @@ export function useAuth() {
     try {
       const response = await authService.login(credentials)
       storeLogin(response.user)
-      router.push('/dashboard')
+      
+      // Redirect based on user role
+      if (response.user.roles?.includes('admin')) {
+        router.push('/admin/analytics')
+      } else {
+        router.push('/dashboard')
+      }
+      
       return response
     } catch (err) {
       const apiError = err as ApiError
@@ -39,7 +46,14 @@ export function useAuth() {
     try {
       const response = await authService.register(data)
       storeLogin(response.user)
-      router.push('/dashboard')
+      
+      // Redirect based on user role (though new registrations typically won't be admin)
+      if (response.user.roles?.includes('admin')) {
+        router.push('/admin/analytics')
+      } else {
+        router.push('/dashboard')
+      }
+      
       return response
     } catch (err) {
       const apiError = err as ApiError

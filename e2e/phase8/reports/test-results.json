@@ -2,16 +2,16 @@
   "config": {
     "configFile": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/playwright.config.ts",
     "rootDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8",
-    "forbidOnly": false,
+    "forbidOnly": true,
     "fullyParallel": false,
     "globalSetup": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/utils/global-setup.ts",
     "globalTeardown": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/utils/global-teardown.ts",
     "globalTimeout": 0,
     "grep": {},
     "grepInvert": null,
-    "maxFailures": 1,
+    "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 2
+      "actualWorkers": 1
     },
     "preserveOutput": "always",
     "reporter": [
@@ -47,9 +47,9 @@
       {
         "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 2,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 1
         },
         "id": "chromium",
         "name": "chromium",
@@ -58,14 +58,14 @@
         "testMatch": [
           "**/*.spec.ts"
         ],
-        "timeout": 120000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 2,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 1
         },
         "id": "firefox",
         "name": "firefox",
@@ -74,14 +74,14 @@
         "testMatch": [
           "**/*.spec.ts"
         ],
-        "timeout": 120000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 2,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 1
         },
         "id": "webkit",
         "name": "webkit",
@@ -90,14 +90,14 @@
         "testMatch": [
           "**/*.spec.ts"
         ],
-        "timeout": 120000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 2,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 1
         },
         "id": "mobile-chrome",
         "name": "mobile-chrome",
@@ -106,14 +106,14 @@
         "testMatch": [
           "**/*.spec.ts"
         ],
-        "timeout": 120000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 2,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 1
         },
         "id": "mobile-safari",
         "name": "mobile-safari",
@@ -122,207 +122,259 @@
         "testMatch": [
           "**/*.spec.ts"
         ],
-        "timeout": 120000
+        "timeout": 30000
       }
     ],
     "shard": null,
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.54.1",
-    "workers": 2,
-    "webServer": {
-      "command": "cd ../.. && docker compose up -d",
-      "url": "http://localhost:3000",
-      "timeout": 120000,
-      "reuseExistingServer": true
-    }
+    "workers": 1,
+    "webServer": null
   },
   "suites": [
     {
-      "title": "us-005-performance-metrics.spec.ts",
-      "file": "us-005-performance-metrics.spec.ts",
+      "title": "test-admin-redirect.spec.ts",
+      "file": "test-admin-redirect.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "US-005: Performance Metrics Dashboard",
-          "file": "us-005-performance-metrics.spec.ts",
-          "line": 6,
+          "title": "Admin Login Redirect",
+          "file": "test-admin-redirect.spec.ts",
+          "line": 4,
           "column": 6,
-          "specs": [],
-          "suites": [
+          "specs": [
             {
-              "title": "Real-time Metrics Updates",
-              "file": "us-005-performance-metrics.spec.ts",
-              "line": 28,
-              "column": 8,
-              "specs": [
+              "title": "should redirect admin to /admin/analytics after login",
+              "ok": false,
+              "tags": [],
+              "tests": [
                 {
-                  "title": "should display real-time metrics with 5-second update intervals",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
                     {
-                      "timeout": 120000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "chromium",
-                      "projectName": "chromium",
-                      "results": [
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7467,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts:10:16",
+                        "location": {
+                          "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                          "column": 16,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \n \u001b[90m  9 |\u001b[39m     \u001b[90m// Go to login page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/login'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Fill in credentials\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'[data-testid=\"email-input\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin@betterprompts.ai'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
                         {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 12671,
-                          "error": {
-                            "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/**\" until \"load\"\n============================================================",
-                            "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/**\" until \"load\"\n============================================================\n    at AdminPage.loginAsAdmin (/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/pages/AdminPage.ts:18:21)\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/us-005-performance-metrics.spec.ts:14:5",
-                            "location": {
-                              "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/pages/AdminPage.ts",
-                              "column": 21,
-                              "line": 18
-                            },
-                            "snippet": "\u001b[90m   at \u001b[39mpages/AdminPage.ts:18\n\n  16 |     \n  17 |     // Wait for redirect to admin dashboard\n> 18 |     await this.page.waitForURL('**/admin/**', { timeout: 10000 });\n     |                     ^\n  19 |     \n  20 |     // Verify admin access\n  21 |     await this.page.waitForSelector('[data-testid=\"admin-nav\"]', { timeout: 5000 });"
+                          "location": {
+                            "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                            "column": 16,
+                            "line": 10
                           },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/pages/AdminPage.ts",
-                                "column": 21,
-                                "line": 18
-                              },
-                              "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/**\" until \"load\"\n============================================================\n\n   at pages/AdminPage.ts:18\n\n  16 |     \n  17 |     // Wait for redirect to admin dashboard\n> 18 |     await this.page.waitForURL('**/admin/**', { timeout: 10000 });\n     |                     ^\n  19 |     \n  20 |     // Verify admin access\n  21 |     await this.page.waitForSelector('[data-testid=\"admin-nav\"]', { timeout: 5000 });\n    at AdminPage.loginAsAdmin (/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/pages/AdminPage.ts:18:21)\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/us-005-performance-metrics.spec.ts:14:5"
-                            },
-                            {
-                              "location": {
-                                "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/us-005-performance-metrics.spec.ts",
-                                "column": 20,
-                                "line": 25
-                              },
-                              "message": "TypeError: Cannot read properties of undefined (reading 'disconnect')\n\n  23 |\n  24 |   test.afterEach(async () => {\n> 25 |     await wsHelper.disconnect();\n     |                    ^\n  26 |   });\n  27 |\n  28 |   test.describe('Real-time Metrics Updates', () => {\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/us-005-performance-metrics.spec.ts:25:20"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2025-07-28T16:45:25.856Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/pages/AdminPage.ts",
-                            "column": 21,
-                            "line": 18
-                          }
+                          "message": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n\n\n   8 |     \n   9 |     // Go to login page\n> 10 |     await page.goto('http://localhost:3000/login');\n     |                ^\n  11 |     \n  12 |     // Fill in credentials\n  13 |     await page.fill('[data-testid=\"email-input\"]', 'admin@betterprompts.ai');\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts:10:16"
                         }
                       ],
-                      "status": "unexpected"
-                    },
-                    {
-                      "timeout": 120000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "firefox",
-                      "projectName": "firefox",
-                      "results": [
+                      "stdout": [
                         {
-                          "workerIndex": 1,
-                          "parallelIndex": 1,
-                          "status": "interrupted",
-                          "duration": 11256,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2025-07-28T16:45:25.860Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-firefox/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-firefox/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-firefox/error-context.md"
-                            }
-                          ]
+                          "text": "🔓 Unlocking user accounts...\n"
+                        },
+                        {
+                          "text": "✅ Redis cache cleared\n"
+                        },
+                        {
+                          "text": "   Deleting and recreating admin@betterprompts.ai...\n"
+                        },
+                        {
+                          "text": "✅ User accounts recreated and ready\n"
+                        },
+                        {
+                          "text": "⏳ Waiting for API to restart...\n"
                         }
                       ],
-                      "status": "skipped"
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-28T17:53:34.377Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/test-admin-redirect-Admin--ac066-admin-analytics-after-login-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/test-admin-redirect-Admin--ac066-admin-analytics-after-login-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                        "column": 16,
+                        "line": 10
+                      }
                     },
                     {
-                      "timeout": 120000,
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7392,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts:10:16",
+                        "location": {
+                          "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                          "column": 16,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \n \u001b[90m  9 |\u001b[39m     \u001b[90m// Go to login page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/login'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Fill in credentials\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'[data-testid=\"email-input\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin@betterprompts.ai'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                            "column": 16,
+                            "line": 10
+                          },
+                          "message": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n\n\n   8 |     \n   9 |     // Go to login page\n> 10 |     await page.goto('http://localhost:3000/login');\n     |                ^\n  11 |     \n  12 |     // Fill in credentials\n  13 |     await page.fill('[data-testid=\"email-input\"]', 'admin@betterprompts.ai');\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts:10:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🔓 Unlocking user accounts...\n"
+                        },
+                        {
+                          "text": "✅ Redis cache cleared\n"
+                        },
+                        {
+                          "text": "   Deleting and recreating admin@betterprompts.ai...\n"
+                        },
+                        {
+                          "text": "✅ User accounts recreated and ready\n"
+                        },
+                        {
+                          "text": "⏳ Waiting for API to restart...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-07-28T17:53:42.759Z",
                       "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "webkit",
-                      "projectName": "webkit",
-                      "results": [],
-                      "status": "skipped"
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/test-admin-redirect-Admin--ac066-admin-analytics-after-login-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/test-admin-redirect-Admin--ac066-admin-analytics-after-login-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/test-admin-redirect-Admin--ac066-admin-analytics-after-login-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                        "column": 16,
+                        "line": 10
+                      }
                     },
                     {
-                      "timeout": 120000,
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7388,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts:10:16",
+                        "location": {
+                          "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                          "column": 16,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \n \u001b[90m  9 |\u001b[39m     \u001b[90m// Go to login page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/login'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Fill in credentials\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'[data-testid=\"email-input\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin@betterprompts.ai'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                            "column": 16,
+                            "line": 10
+                          },
+                          "message": "Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"load\"\u001b[22m\n\n\n   8 |     \n   9 |     // Go to login page\n> 10 |     await page.goto('http://localhost:3000/login');\n     |                ^\n  11 |     \n  12 |     // Fill in credentials\n  13 |     await page.fill('[data-testid=\"email-input\"]', 'admin@betterprompts.ai');\n    at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts:10:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🔓 Unlocking user accounts...\n"
+                        },
+                        {
+                          "text": "✅ Redis cache cleared\n"
+                        },
+                        {
+                          "text": "   Deleting and recreating admin@betterprompts.ai...\n"
+                        },
+                        {
+                          "text": "✅ User accounts recreated and ready\n"
+                        },
+                        {
+                          "text": "⏳ Waiting for API to restart...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 2,
+                      "startTime": "2025-07-28T17:53:51.071Z",
                       "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "mobile-chrome",
-                      "projectName": "mobile-chrome",
-                      "results": [],
-                      "status": "skipped"
-                    },
-                    {
-                      "timeout": 120000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "mobile-safari",
-                      "projectName": "mobile-safari",
-                      "results": [],
-                      "status": "skipped"
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/test-admin-redirect-Admin--ac066-admin-analytics-after-login-chromium-retry2/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-results/test-admin-redirect-Admin--ac066-admin-analytics-after-login-chromium-retry2/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/test-admin-redirect.spec.ts",
+                        "column": 16,
+                        "line": 10
+                      }
                     }
                   ],
-                  "id": "073bd7e9b39ab0f73e53-573b6f59332c2765e189",
-                  "file": "us-005-performance-metrics.spec.ts",
-                  "line": 29,
-                  "column": 9
+                  "status": "unexpected"
                 }
-              ]
+              ],
+              "id": "be6e3e4cb555193ed3d0-6a5778cd23a01b169dc1",
+              "file": "test-admin-redirect.spec.ts",
+              "line": 5,
+              "column": 7
             }
           ]
         }
       ]
     }
   ],
-  "errors": [
-    {
-      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
-    }
-  ],
+  "errors": [],
   "stats": {
-    "startTime": "2025-07-28T16:45:23.696Z",
-    "duration": 16107.748,
+    "startTime": "2025-07-28T17:53:26.424Z",
+    "duration": 32270.143,
     "expected": 0,
-    "skipped": 4,
+    "skipped": 0,
     "unexpected": 1,
     "flaky": 0
   }

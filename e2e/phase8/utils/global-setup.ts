@@ -1,7 +1,11 @@
 import { chromium, FullConfig } from '@playwright/test';
+import { unlockUsers, clearAuthLocks } from './unlock-users';
 
 async function globalSetup(config: FullConfig) {
   console.log('🚀 Starting global setup for performance tests...');
+  
+  // First, unlock any locked accounts and clear auth caches
+  await unlockUsers(['admin@betterprompts.ai']);
   
   const browser = await chromium.launch();
   const context = await browser.newContext();
