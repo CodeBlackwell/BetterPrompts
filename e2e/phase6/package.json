@@ -1,0 +1,31 @@
+{
+  "name": "betterprompts-e2e-phase6",
+  "version": "1.0.0",
+  "description": "E2E tests for Phase 6: Batch Processing",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report test-results/html",
+    "test:batch": "playwright test us-003-batch-processing.spec.ts",
+    "test:perf": "playwright test batch-performance.spec.ts",
+    "test:chrome": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project='Mobile Chrome' --project='Mobile Safari'",
+    "generate:csv": "ts-node scripts/generate-test-data.ts",
+    "clean": "rm -rf test-results downloads fixtures/generated"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "csv-parse": "^5.5.0",
+    "csv-stringify": "^6.4.0",
+    "adm-zip": "^0.5.10",
+    "ts-node": "^10.9.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

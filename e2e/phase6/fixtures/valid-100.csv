@@ -1,0 +1,103 @@
+prompt,category,priority
+"Explain machine learning algorithms",education,high
+"Write a cover letter for software engineer position",business,high
+"Debug this JavaScript code snippet",programming,medium
+"Healthy meal prep ideas for the week",health,low
+"How to negotiate salary effectively",career,high
+"Implement a binary search tree",programming,high
+"Write a poem about nature",creative,low
+"Best practices for microservices architecture",programming,high
+"Study techniques for better retention",education,medium
+"Create a business plan outline",business,high
+"Explain blockchain technology",technology,medium
+"Tips for public speaking",communication,high
+"Write unit tests for React components",programming,high
+"Morning routine for productivity",lifestyle,low
+"How to conduct user interviews",design,medium
+"Implement a REST API with authentication",programming,high
+"Creative writing prompts for beginners",creative,low
+"Data visualization best practices",data,medium
+"How to build a personal brand",career,high
+"Explain neural networks simply",education,high
+"Write a resignation letter template",business,medium
+"CSS Grid vs Flexbox comparison",programming,medium
+"Meditation techniques for beginners",health,low
+"How to prepare for system design interviews",career,high
+"Create a GitHub Actions workflow",programming,medium
+"Write a short story opening",creative,low
+"Database optimization techniques",programming,high
+"Time management strategies",productivity,medium
+"How to pitch to investors",business,high
+"Explain Docker containers",technology,medium
+"Improve communication skills",communication,medium
+"Implement authentication in Node.js",programming,high
+"Healthy snack ideas for work",health,low
+"How to learn a new programming language",education,medium
+"Create a marketing campaign",business,high
+"Write technical documentation",documentation,medium
+"Mobile app development best practices",programming,high
+"Stress management techniques",health,medium
+"How to build a portfolio website",career,medium
+"Explain GraphQL vs REST",programming,medium
+"Creative brainstorming techniques",creative,low
+"Data science project ideas",data,medium
+"How to network effectively",career,high
+"Implement a caching strategy",programming,high
+"Write a product description",business,medium
+"Frontend performance optimization",programming,high
+"Yoga poses for beginners",health,low
+"How to conduct code reviews",programming,medium
+"Create a content calendar",marketing,medium
+"Explain cloud computing concepts",technology,high
+"Public speaking anxiety tips",communication,medium
+"Build a real-time chat application",programming,high
+"Creative writing exercises",creative,low
+"Machine learning project workflow",data,high
+"How to ask for a promotion",career,medium
+"Implement error handling best practices",programming,medium
+"Write an executive summary",business,high
+"Responsive design principles",programming,medium
+"Healthy habits for developers",health,low
+"How to mentor junior developers",career,medium
+"Create API documentation",documentation,high
+"Explain microservices communication",programming,high
+"Team building activities",management,low
+"Data pipeline architecture",data,high
+"How to handle difficult conversations",communication,medium
+"Implement rate limiting",programming,medium
+"Write a project proposal",business,high
+"Testing strategies for web apps",programming,high
+"Mindfulness in the workplace",health,low
+"How to transition to tech",career,medium
+"Create a CI/CD pipeline",programming,high
+"Storytelling in presentations",communication,medium
+"Database design principles",programming,high
+"Work-life balance tips",lifestyle,low
+"How to conduct user research",design,medium
+"Implement OAuth 2.0",programming,high
+"Write compelling headlines",marketing,medium
+"Frontend security best practices",programming,high
+"Nutrition tips for brain health",health,medium
+"How to manage remote teams",management,high
+"Create data visualizations",data,medium
+"Explain serverless architecture",technology,high
+"Conflict resolution strategies",communication,medium
+"Build a recommendation system",programming,high
+"Creative problem solving",creative,medium
+"ETL pipeline best practices",data,high
+"How to give constructive feedback",communication,medium
+"Implement websocket connections",programming,medium
+"Write a business case",business,high
+"Mobile-first design approach",programming,medium
+"Exercise routines for desk workers",health,low
+"How to build technical skills",education,medium
+"Create user personas",design,medium
+"Explain container orchestration",technology,high
+"Presentation design tips",communication,low
+"Build a search functionality",programming,high
+"Creative coding projects",creative,medium
+"Data warehouse design",data,high
+"How to handle job rejection",career,low
+"Implement logging best practices",programming,medium
+"Write effective emails",communication,medium
+"API versioning strategies",programming,high
