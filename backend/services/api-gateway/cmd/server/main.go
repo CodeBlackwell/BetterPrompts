@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/betterprompts/api-gateway/internal/auth"
 	"github.com/betterprompts/api-gateway/internal/handlers"
 	"github.com/betterprompts/api-gateway/internal/middleware"
 	"github.com/betterprompts/api-gateway/internal/services"
+	"github.com/betterprompts/api-gateway/internal/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	gorillaws "github.com/gorilla/websocket"
 )
 
 func main() {
@@ -163,8 +166,15 @@ func main() {
 		admin.DELETE("/users/:id", handlers.DeleteUser(clients))
 		
 		// System metrics
+		metricsHandler := handlers.NewMetricsHandler(clients)
 		admin.GET("/metrics", handlers.GetSystemMetrics(clients))
 		admin.GET("/metrics/usage", handlers.GetUsageMetrics(clients))
+		admin.GET("/metrics/performance", metricsHandler.GetPerformanceMetrics)
+		admin.GET("/metrics/infrastructure", metricsHandler.GetInfrastructureMetrics)
+		admin.GET("/metrics/business", metricsHandler.GetBusinessMetrics)
+		admin.GET("/metrics/sla", metricsHandler.GetSLAMetrics)
+		admin.GET("/metrics/history", metricsHandler.GetMetricsHistory)
+		admin.GET("/metrics/techniques", metricsHandler.GetTechniqueMetrics)
 		
 		// Cache management
 		admin.POST("/cache/clear", handlers.ClearCache(clients))
@@ -185,6 +195,24 @@ func main() {
 		developer.GET("/analytics/usage", handlers.GetDeveloperUsage(clients))
 		developer.GET("/analytics/performance", handlers.GetPerformanceMetrics(clients))
 	}
+
+	// WebSocket endpoint for real-time metrics
+	wsHub := websocket.NewHub()
+	upgrader := gorillaws.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			// In production, implement proper origin checking
+			return true
+		},
+	}
+	
+	router.GET("/ws", func(c *gin.Context) {
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			logger.WithError(err).Error("Failed to upgrade WebSocket connection")
+			return
+		}
+		wsHub.ServeWS(conn)
+	})
 
 	// Start server
 	port := os.Getenv("PORT")

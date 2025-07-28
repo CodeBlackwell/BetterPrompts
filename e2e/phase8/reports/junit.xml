@@ -1,0 +1,81 @@
+<testsuites id="" name="" tests="5" failures="1" skipped="4" errors="0" time="16.107748">
+<testsuite name="us-005-performance-metrics.spec.ts" timestamp="2025-07-28T16:45:24.962Z" hostname="chromium" tests="1" failures="1" skipped="0" time="12.671" errors="0">
+<testcase name="US-005: Performance Metrics Dashboard › Real-time Metrics Updates › should display real-time metrics with 5-second update intervals" classname="us-005-performance-metrics.spec.ts" time="12.671">
+<failure message="us-005-performance-metrics.spec.ts:29:9 should display real-time metrics with 5-second update intervals" type="FAILURE">
+<![CDATA[  [chromium] › us-005-performance-metrics.spec.ts:29:9 › US-005: Performance Metrics Dashboard › Real-time Metrics Updates › should display real-time metrics with 5-second update intervals 
+
+    TimeoutError: page.waitForURL: Timeout 10000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/admin/**" until "load"
+    ============================================================
+
+       at pages/AdminPage.ts:18
+
+      16 |     
+      17 |     // Wait for redirect to admin dashboard
+    > 18 |     await this.page.waitForURL('**/admin/**', { timeout: 10000 });
+         |                     ^
+      19 |     
+      20 |     // Verify admin access
+      21 |     await this.page.waitForSelector('[data-testid="admin-nav"]', { timeout: 5000 });
+        at AdminPage.loginAsAdmin (/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/pages/AdminPage.ts:18:21)
+        at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/us-005-performance-metrics.spec.ts:14:5
+
+    TypeError: Cannot read properties of undefined (reading 'disconnect')
+
+      23 |
+      24 |   test.afterEach(async () => {
+    > 25 |     await wsHelper.disconnect();
+         |                    ^
+      26 |   });
+      27 |
+      28 |   test.describe('Real-time Metrics Updates', () => {
+        at /Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase8/us-005-performance-metrics.spec.ts:25:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/video.webm]]
+
+[[ATTACHMENT|../test-results/us-005-performance-metrics-7fc4c-h-5-second-update-intervals-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="us-005-performance-metrics.spec.ts" timestamp="2025-07-28T16:45:24.962Z" hostname="firefox" tests="1" failures="0" skipped="1" time="11.256" errors="0">
+<testcase name="US-005: Performance Metrics Dashboard › Real-time Metrics Updates › should display real-time metrics with 5-second update intervals" classname="us-005-performance-metrics.spec.ts" time="11.256">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="us-005-performance-metrics.spec.ts" timestamp="2025-07-28T16:45:24.962Z" hostname="webkit" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="US-005: Performance Metrics Dashboard › Real-time Metrics Updates › should display real-time metrics with 5-second update intervals" classname="us-005-performance-metrics.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="us-005-performance-metrics.spec.ts" timestamp="2025-07-28T16:45:24.962Z" hostname="mobile-chrome" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="US-005: Performance Metrics Dashboard › Real-time Metrics Updates › should display real-time metrics with 5-second update intervals" classname="us-005-performance-metrics.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="us-005-performance-metrics.spec.ts" timestamp="2025-07-28T16:45:24.962Z" hostname="mobile-safari" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="US-005: Performance Metrics Dashboard › Real-time Metrics Updates › should display real-time metrics with 5-second update intervals" classname="us-005-performance-metrics.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+</testsuites>

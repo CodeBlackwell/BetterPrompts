@@ -110,6 +110,7 @@ export default function LoginPage() {
                   onChange={handleInputChange}
                   className="pl-9"
                   autoComplete="email"
+                  data-testid="email-input"
                 />
               </div>
             </div>
@@ -129,6 +130,7 @@ export default function LoginPage() {
                   onChange={handleInputChange}
                   className="pl-9"
                   autoComplete="current-password"
+                  data-testid="password-input"
                 />
               </div>
             </div>
@@ -163,6 +165,7 @@ export default function LoginPage() {
               type="submit"
               className="w-full"
               disabled={isLoading}
+              data-testid="login-button"
             >
               {isLoading ? (
                 <>

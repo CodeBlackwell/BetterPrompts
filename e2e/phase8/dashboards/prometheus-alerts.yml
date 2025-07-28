@@ -1,0 +1,291 @@
+groups:
+  - name: betterprompts_sla_alerts
+    interval: 30s
+    rules:
+      # Availability SLA Alert
+      - alert: SLAAvailabilityBreach
+        expr: |
+          (1 - (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) / 
+            sum(rate(http_requests_total[5m]))
+          )) * 100 < 99.9
+        for: 5m
+        labels:
+          severity: critical
+          sla: availability
+          team: platform
+        annotations:
+          summary: "Availability SLA breach detected"
+          description: "System availability is {{ $value | humanize }}%, below the 99.9% SLA target"
+          dashboard: "http://grafana:3000/d/betterprompts-performance"
+          runbook: "https://wiki.betterprompts.ai/runbooks/availability-sla-breach"
+
+      # Latency SLA Alerts
+      - alert: SLALatencyP50Breach
+        expr: |
+          histogram_quantile(0.50, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) * 1000 > 100
+        for: 5m
+        labels:
+          severity: warning
+          sla: latency_p50
+          team: platform
+        annotations:
+          summary: "P50 latency SLA breach"
+          description: "P50 response time is {{ $value | humanize }}ms, exceeding 100ms target"
+          
+      - alert: SLALatencyP95Breach
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) * 1000 > 200
+        for: 5m
+        labels:
+          severity: critical
+          sla: latency_p95
+          team: platform
+        annotations:
+          summary: "P95 latency SLA breach"
+          description: "P95 response time is {{ $value | humanize }}ms, exceeding 200ms target"
+          
+      - alert: SLALatencyP99Breach
+        expr: |
+          histogram_quantile(0.99, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) * 1000 > 500
+        for: 5m
+        labels:
+          severity: warning
+          sla: latency_p99
+          team: platform
+        annotations:
+          summary: "P99 latency SLA breach"
+          description: "P99 response time is {{ $value | humanize }}ms, exceeding 500ms target"
+
+      # Throughput SLA Alert
+      - alert: SLAThroughputBreach
+        expr: sum(rate(http_requests_total[5m])) < 900
+        for: 10m
+        labels:
+          severity: warning
+          sla: throughput
+          team: platform
+        annotations:
+          summary: "Throughput below SLA target"
+          description: "Current throughput is {{ $value | humanize }} req/s, below 1000 req/s target"
+
+      # Error Rate SLA Alert
+      - alert: SLAErrorRateBreach
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) / 
+           sum(rate(http_requests_total[5m]))) * 100 > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          sla: error_rate
+          team: platform
+        annotations:
+          summary: "Error rate SLA breach"
+          description: "Error rate is {{ $value | humanize }}%, exceeding 0.1% SLA target"
+
+  - name: betterprompts_performance_alerts
+    interval: 30s
+    rules:
+      # ML Pipeline Performance
+      - alert: MLPipelineSlowdown
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(ml_pipeline_duration_seconds_bucket[5m])) by (le)
+          ) * 1000 > 1000
+        for: 10m
+        labels:
+          severity: warning
+          component: ml_pipeline
+          team: ml
+        annotations:
+          summary: "ML pipeline experiencing slowdown"
+          description: "ML pipeline P95 latency is {{ $value | humanize }}ms"
+
+      # Cache Performance
+      - alert: CacheHitRateLow
+        expr: |
+          sum(rate(cache_hit_total[5m])) / 
+          (sum(rate(cache_hit_total[5m])) + sum(rate(cache_miss_total[5m]))) * 100 < 80
+        for: 15m
+        labels:
+          severity: warning
+          component: cache
+          team: platform
+        annotations:
+          summary: "Cache hit rate below threshold"
+          description: "Cache hit rate is {{ $value | humanize }}%, should be above 80%"
+
+      # Database Connection Pool
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          (db_connection_pool_active / db_connection_pool_max) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          component: database
+          team: platform
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "{{ $value | humanize }}% of database connections in use"
+
+      # Circuit Breaker
+      - alert: CircuitBreakerOpen
+        expr: circuit_breaker_state == 1
+        for: 1m
+        labels:
+          severity: critical
+          component: circuit_breaker
+          team: platform
+        annotations:
+          summary: "Circuit breaker is open"
+          description: "Circuit breaker for {{ $labels.service }} is open, requests are being rejected"
+
+  - name: betterprompts_capacity_alerts
+    interval: 60s
+    rules:
+      # CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          avg(rate(container_cpu_usage_seconds_total{
+            namespace="default",
+            pod=~"betterprompts.*"
+          }[5m])) by (pod) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          resource: cpu
+          team: platform
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Pod {{ $labels.pod }} CPU usage is {{ $value | humanize }}%"
+
+      # Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          (container_memory_usage_bytes{
+            namespace="default",
+            pod=~"betterprompts.*"
+          } / container_spec_memory_limit_bytes) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          resource: memory
+          team: platform
+        annotations:
+          summary: "High memory usage detected"
+          description: "Pod {{ $labels.pod }} memory usage is {{ $value | humanize }}%"
+
+      # Disk Space
+      - alert: LowDiskSpace
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} / 
+           node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+          resource: disk
+          team: infrastructure
+        annotations:
+          summary: "Low disk space on node"
+          description: "Node {{ $labels.instance }} has {{ $value | humanize }}% disk space remaining"
+
+  - name: betterprompts_business_alerts
+    interval: 60s
+    rules:
+      # User Satisfaction
+      - alert: LowUserSatisfaction
+        expr: user_satisfaction_rate < 0.85
+        for: 30m
+        labels:
+          severity: warning
+          metric: user_satisfaction
+          team: product
+        annotations:
+          summary: "User satisfaction below target"
+          description: "User satisfaction is {{ $value | humanizePercentage }}, target is 85%"
+
+      # Technique Accuracy
+      - alert: LowTechniqueAccuracy
+        expr: |
+          avg(technique_accuracy_rate) by (technique) < 0.80
+        for: 30m
+        labels:
+          severity: warning
+          metric: technique_accuracy
+          team: ml
+        annotations:
+          summary: "Technique accuracy below threshold"
+          description: "{{ $labels.technique }} accuracy is {{ $value | humanizePercentage }}"
+
+      # Cost Per Request
+      - alert: HighCostPerRequest
+        expr: avg_over_time(cost_per_request[1h]) > 0.002
+        for: 1h
+        labels:
+          severity: warning
+          metric: cost_per_request
+          team: finance
+        annotations:
+          summary: "Cost per request exceeding budget"
+          description: "Average cost per request is ${{ $value | humanize }}, budget is $0.002"
+
+  - name: betterprompts_anomaly_alerts
+    interval: 30s
+    rules:
+      # Traffic Spike Detection
+      - alert: TrafficSpike
+        expr: |
+          sum(rate(http_requests_total[5m])) > 
+          (avg_over_time(sum(rate(http_requests_total[5m]))[1h:5m]) * 3)
+        for: 5m
+        labels:
+          severity: info
+          anomaly: traffic_spike
+          team: platform
+        annotations:
+          summary: "Unusual traffic spike detected"
+          description: "Traffic is {{ $value | humanize }} req/s, 3x above hourly average"
+
+      # Error Rate Anomaly
+      - alert: ErrorRateAnomaly
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) / 
+           sum(rate(http_requests_total[5m]))) > 
+          (avg_over_time(
+            sum(rate(http_requests_total{status=~"5.."}[5m])) / 
+            sum(rate(http_requests_total[5m]))[1d:5m]
+          ) * 5)
+        for: 5m
+        labels:
+          severity: warning
+          anomaly: error_rate
+          team: platform
+        annotations:
+          summary: "Abnormal error rate increase"
+          description: "Error rate is 5x above daily average"
+
+      # Latency Anomaly
+      - alert: LatencyAnomaly
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 
+          (avg_over_time(
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+            )[1h:5m]
+          ) * 2)
+        for: 10m
+        labels:
+          severity: warning
+          anomaly: latency
+          team: platform
+        annotations:
+          summary: "Latency anomaly detected"
+          description: "P95 latency is 2x above hourly average"
