@@ -1,0 +1,1570 @@
+{
+  "config": {
+    "configFile": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10/playwright.config.ts",
+    "rootDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10/global-setup.ts",
+    "globalTeardown": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10/global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "rate-limiting",
+        "name": "rate-limiting",
+        "testDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10",
+        "testIgnore": [],
+        "testMatch": [
+          "us-015-rate-limiting.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "concurrent-access",
+        "name": "concurrent-access",
+        "testDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10",
+        "testIgnore": [],
+        "testMatch": [
+          "ec-06-concurrent-access.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "headers",
+        "name": "headers",
+        "testDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10",
+        "testIgnore": [],
+        "testMatch": [
+          "rate-limit-headers.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "distributed",
+        "name": "distributed",
+        "testDir": "/Users/lechristopherblackwell/Desktop/Codeblackwell/BetterPrompts/e2e/phase10",
+        "testIgnore": [],
+        "testMatch": [
+          "distributed-limiting.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "us-015-rate-limiting.spec.ts",
+      "file": "us-015-rate-limiting.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "US-015: Rate Limiting",
+          "file": "us-015-rate-limiting.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Per-User Rate Limits",
+              "file": "us-015-rate-limiting.spec.ts",
+              "line": 37,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should allow requests under the limit",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-1fc9750a4ce5b33d9da8",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 38,
+                  "column": 9
+                },
+                {
+                  "title": "should enforce rate limit at exactly the limit",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-37da0644c8acb6b4783e",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 56,
+                  "column": 9
+                },
+                {
+                  "title": "should return 429 when over the limit",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-96c5341c601338dbd370",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 76,
+                  "column": 9
+                },
+                {
+                  "title": "should share rate limits across multiple API keys for same user",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-d2a299ce9234802f3a92",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 98,
+                  "column": 9
+                },
+                {
+                  "title": "should isolate rate limits between different users",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-2c20b6f31eec5aa93162",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 111,
+                  "column": 9
+                },
+                {
+                  "title": "should reset rate limits after window expires",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-a961b7b072f1a06fe6bc",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 129,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Per-IP Rate Limits",
+              "file": "us-015-rate-limiting.spec.ts",
+              "line": 143,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should enforce per-IP limits for anonymous requests",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-7bb6e7ff818fac3dd697",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 144,
+                  "column": 9
+                },
+                {
+                  "title": "should handle multiple users from same IP",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-f1ed7dca66aec07ea406",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 158,
+                  "column": 9
+                },
+                {
+                  "title": "should handle proxy and load balancer headers",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-fa3ad24f3e5e3dde46ee",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 179,
+                  "column": 9
+                },
+                {
+                  "title": "should handle IPv4 and IPv6 addresses correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-8f39580781f68d7743c7",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 196,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Rate Limit Headers",
+              "file": "us-015-rate-limiting.spec.ts",
+              "line": 210,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should include all required headers on successful requests",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-5c11aacdffb6a5afec5c",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 211,
+                  "column": 9
+                },
+                {
+                  "title": "should include optional headers when configured",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-710da801e87663c68592",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 227,
+                  "column": 9
+                },
+                {
+                  "title": "should show accurate header progression",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-7851c39a851e336f2d39",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 245,
+                  "column": 9
+                },
+                {
+                  "title": "should include Retry-After header on 429 responses",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-7e436b22ad2face59e3a",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 270,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Rate Limit Accuracy",
+              "file": "us-015-rate-limiting.spec.ts",
+              "line": 291,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should enforce limits within 1% accuracy",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-19f42f8a3350ef0eff23",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 292,
+                  "column": 9
+                },
+                {
+                  "title": "should have accurate reset timing",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-d12aa3c3c4488d6de64d",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 304,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Rate Limiting Strategies",
+              "file": "us-015-rate-limiting.spec.ts",
+              "line": 320,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle fixed window strategy correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-fa7930d268524419aa5a",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 321,
+                  "column": 9
+                },
+                {
+                  "title": "should prevent rate limit bypass attempts",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "rate-limiting",
+                      "projectName": "rate-limiting",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "78210e1a7d07c2986450-47b2334b86dcdc32acef",
+                  "file": "us-015-rate-limiting.spec.ts",
+                  "line": 345,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "ec-06-concurrent-access.spec.ts",
+      "file": "ec-06-concurrent-access.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "EC-06: Concurrent Access",
+          "file": "ec-06-concurrent-access.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Burst Request Handling",
+              "file": "ec-06-concurrent-access.spec.ts",
+              "line": 38,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle 50 simultaneous requests",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-5bf8b63c408003d6bc32",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 39,
+                  "column": 9
+                },
+                {
+                  "title": "should handle 100 requests in 1 second",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-8ef5c50ce77b0878b597",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 58,
+                  "column": 9
+                },
+                {
+                  "title": "should handle mixed authenticated and anonymous requests",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-cb8220cd00c55c897fb4",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 85,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Sustained Load Handling",
+              "file": "ec-06-concurrent-access.spec.ts",
+              "line": 114,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should maintain consistent performance under sustained load",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-15d019ff93ed356bb6b2",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 115,
+                  "column": 9
+                },
+                {
+                  "title": "should handle alternating burst and quiet periods",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-0130356b74b514cf9861",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 134,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Fairness and Queue Behavior",
+              "file": "ec-06-concurrent-access.spec.ts",
+              "line": 160,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should provide fair access to multiple users",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-275457798d7563d2883a",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 161,
+                  "column": 9
+                },
+                {
+                  "title": "should maintain request order under load",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-a5224872e1820fd9b285",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 186,
+                  "column": 9
+                },
+                {
+                  "title": "should prevent starvation of any user",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-88956378f00be0605241",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 208,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Performance Under Load",
+              "file": "ec-06-concurrent-access.spec.ts",
+              "line": 248,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should maintain acceptable response times under various load patterns",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-e69ddfe9b2c14177cae4",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 249,
+                  "column": 9
+                },
+                {
+                  "title": "should handle wave pattern loads",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-1f9919a20fec2ccce4c7",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 289,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Race Condition Detection",
+              "file": "ec-06-concurrent-access.spec.ts",
+              "line": 317,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should not have race conditions in rate limit counting",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-faf43eef69cc99b9a5ad",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 318,
+                  "column": 9
+                },
+                {
+                  "title": "should handle concurrent modifications correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-eb6adb596e0016a67e41",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 344,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Graceful Degradation",
+              "file": "ec-06-concurrent-access.spec.ts",
+              "line": 363,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should degrade gracefully under extreme load",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-8f9ab9076d59654a0567",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 364,
+                  "column": 9
+                },
+                {
+                  "title": "should recover quickly after load spike",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "concurrent-access",
+                      "projectName": "concurrent-access",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "3ac222b02ffb97789806-9e2470b1d20a827d9b5f",
+                  "file": "ec-06-concurrent-access.spec.ts",
+                  "line": 389,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "rate-limit-headers.spec.ts",
+      "file": "rate-limit-headers.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Rate Limit Headers Validation",
+          "file": "rate-limit-headers.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Required Headers",
+              "file": "rate-limit-headers.spec.ts",
+              "line": 31,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should include all required headers on 200 response",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-a36189c1ab2b0641d020",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 32,
+                  "column": 9
+                },
+                {
+                  "title": "should parse header values correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-659a033c084b279b77dd",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 49,
+                  "column": 9
+                },
+                {
+                  "title": "should validate header value formats",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-62b4ce55641b7ece4959",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 64,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Optional Headers",
+              "file": "rate-limit-headers.spec.ts",
+              "line": 86,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should include reset-after header when present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-d5ff3e530369f2973324",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 87,
+                  "column": 9
+                },
+                {
+                  "title": "should include bucket identifier when using bucketed rate limiting",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-f04e528b172274e46f7f",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 106,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "429 Response Headers",
+              "file": "rate-limit-headers.spec.ts",
+              "line": 122,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should include Retry-After header on 429",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-27220a4714cd1b52cda3",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 123,
+                  "column": 9
+                },
+                {
+                  "title": "should support both seconds and HTTP-date formats for Retry-After",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-d7b29e24298825447e6b",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 147,
+                  "column": 9
+                },
+                {
+                  "title": "should still include rate limit headers on 429",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-6b821f7b6d672691034f",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 177,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Header Consistency",
+              "file": "rate-limit-headers.spec.ts",
+              "line": 204,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should maintain consistent headers across requests",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-b74088cadb7c0dcc4673",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 205,
+                  "column": 9
+                },
+                {
+                  "title": "should have internally consistent header values",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-48be7f5abca464008d99",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 241,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Reset Time Accuracy",
+              "file": "rate-limit-headers.spec.ts",
+              "line": 267,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should have accurate reset timestamps",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-6a4f8bfa67c4033ab5ff",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 268,
+                  "column": 9
+                },
+                {
+                  "title": "should update reset time when window rolls over",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-d73de3be7ecdf9f1aebf",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 287,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Edge Cases",
+              "file": "rate-limit-headers.spec.ts",
+              "line": 325,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle first request of a new window correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-a1499dfca31282769c1a",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 326,
+                  "column": 9
+                },
+                {
+                  "title": "should handle requests at exact rate limit boundary",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-2fe5b4b8a1ffadc48baa",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 341,
+                  "column": 9
+                },
+                {
+                  "title": "should handle timezone differences correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "headers",
+                      "projectName": "headers",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "526a11b04e5445c10c8f-90fc99de7fa9f1c6a685",
+                  "file": "rate-limit-headers.spec.ts",
+                  "line": 366,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "distributed-limiting.spec.ts",
+      "file": "distributed-limiting.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Distributed Rate Limiting",
+          "file": "distributed-limiting.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Cross-Server Rate Limit Coordination",
+              "file": "distributed-limiting.spec.ts",
+              "line": 44,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should share rate limits across all server instances",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-dd0b18e00ce9789dfec4",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 47,
+                  "column": 9
+                },
+                {
+                  "title": "should maintain consistent rate limit state across servers",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-4245178ae4eb3443ad83",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 76,
+                  "column": 9
+                },
+                {
+                  "title": "should handle distributed burst traffic correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-a4fd6a6524cdf0b4fd25",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 108,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Distributed IP-based Limiting",
+              "file": "distributed-limiting.spec.ts",
+              "line": 148,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should coordinate IP-based limits across servers",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-93c85cedb76e2f0012bb",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 151,
+                  "column": 9
+                },
+                {
+                  "title": "should handle distributed proxy scenarios",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-1f134353f6ad283b1de7",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 174,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Distributed Reset Synchronization",
+              "file": "distributed-limiting.spec.ts",
+              "line": 203,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should synchronize rate limit resets across servers",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-083f2eed1e171ec17558",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 204,
+                  "column": 9
+                },
+                {
+                  "title": "should handle clock skew between servers gracefully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-20dd8455b39711aa1cb8",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 236,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Distributed Failure Scenarios",
+              "file": "distributed-limiting.spec.ts",
+              "line": 262,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle partial server failures gracefully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-95f8c89564a1f3f4180d",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 263,
+                  "column": 9
+                },
+                {
+                  "title": "should recover from temporary distributed storage failures",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-467bf846b074b72a9ef8",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 290,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Distributed Performance",
+              "file": "distributed-limiting.spec.ts",
+              "line": 326,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should maintain low latency for rate limit checks",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-f9801e5f8a63fb3d0357",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 327,
+                  "column": 9
+                },
+                {
+                  "title": "should handle high-concurrency distributed scenarios",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-193158a90abf831b5d0f",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 355,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Distributed Edge Cases",
+              "file": "distributed-limiting.spec.ts",
+              "line": 398,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle network partitions correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-ec6d354734e3853909d4",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 399,
+                  "column": 9
+                },
+                {
+                  "title": "should handle distributed cache invalidation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "distributed",
+                      "projectName": "distributed",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "d5e21ec2ea8518db124d-034303d59c2096cfa1a8",
+                  "file": "distributed-limiting.spec.ts",
+                  "line": 438,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-07-29T11:12:21.643Z",
+    "duration": 59.54399999999998,
+    "expected": 0,
+    "skipped": 60,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

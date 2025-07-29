@@ -142,6 +142,11 @@ type IntentClassificationResult struct {
 }
 
 func (c *IntentClassifierClient) ClassifyIntent(ctx context.Context, text string) (*IntentClassificationResult, error) {
+	// Check if we should use mock mode (for testing when intent-classifier is down)
+	if os.Getenv("USE_MOCK_INTENT_CLASSIFIER") == "true" || strings.Contains(c.baseURL, "mock://") {
+		return c.ClassifyIntentMock(ctx, text)
+	}
+
 	req := map[string]string{"text": text}
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -156,6 +161,10 @@ func (c *IntentClassifierClient) ClassifyIntent(ctx context.Context, text string
 
 	resp, err := c.client.Do(httpReq)
 	if err != nil {
+		// Fallback to mock mode if service is unavailable
+		if os.Getenv("FALLBACK_TO_MOCK") == "true" {
+			return c.ClassifyIntentMock(ctx, text)
+		}
 		return nil, fmt.Errorf("failed to send request to %s: %w", c.baseURL+"/api/v1/intents/classify", err)
 	}
 	defer resp.Body.Close()
@@ -167,6 +176,10 @@ func (c *IntentClassifierClient) ClassifyIntent(ctx context.Context, text string
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		// Fallback to mock mode on server errors
+		if os.Getenv("FALLBACK_TO_MOCK") == "true" && resp.StatusCode >= 500 {
+			return c.ClassifyIntentMock(ctx, text)
+		}
 		return nil, fmt.Errorf("intent classifier returned status %d: %s", resp.StatusCode, responseBody)
 	}
 

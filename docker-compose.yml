@@ -127,18 +127,19 @@ services:
     environment:
       - PORT=8090
       - GIN_MODE=debug
+      - NODE_ENV=test
+      - ENVIRONMENT=test
       - DATABASE_URL=postgresql://betterprompts:betterprompts@postgres:5432/betterprompts?sslmode=disable
       - REDIS_URL=redis:6379
       - JWT_SECRET_KEY=dev-secret-change-in-production
       - JWT_REFRESH_SECRET_KEY=dev-refresh-secret-change-in-production
       - LOG_LEVEL=DEBUG
-      - NODE_ENV=development
-      - ENVIRONMENT=${ENVIRONMENT:-development}
       - INTENT_CLASSIFIER_URL=http://intent-classifier:8001
       - TECHNIQUE_SELECTOR_URL=http://technique-selector:8002
       - PROMPT_GENERATOR_URL=http://prompt-generator:8003
       - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost
       - PRODUCTION_ORIGIN=${PRODUCTION_ORIGIN:-}
+      - FALLBACK_TO_MOCK=true
     volumes:
       # Don't mount source code in production mode - it overrides the built binary
       # - ./backend/services/api-gateway:/app

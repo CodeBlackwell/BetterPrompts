@@ -45,7 +45,7 @@ func DefaultRateLimitConfig() RateLimitConfig {
 // TestRateLimitConfig returns a rate limit configuration optimized for testing
 func TestRateLimitConfig() RateLimitConfig {
 	return RateLimitConfig{
-		Limit:  1000, // Higher limit for tests
+		Limit:  1000, // Match E2E test expectations  
 		Window: 1 * time.Minute,
 		KeyFunc: func(c *gin.Context) string {
 			// Use user ID if authenticated, otherwise use IP
