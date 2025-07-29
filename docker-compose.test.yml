@@ -151,37 +151,6 @@ services:
     ports:
       - "8086:8003"
 
-  # Frontend test server
-  frontend-test:
-    build:
-      context: ./frontend
-      target: test
-    environment:
-      NEXT_PUBLIC_API_URL: http://api-gateway:8080
-      NODE_ENV: test
-    ports:
-      - "3001:3000"
-    depends_on:
-      - api-gateway
-
-  # Playwright test runner
-  playwright:
-    build:
-      context: ./tests/e2e
-      dockerfile: Dockerfile.playwright
-    depends_on:
-      - frontend-test
-      - api-gateway
-    environment:
-      BASE_URL: http://frontend-test:3000
-      API_URL: http://api-gateway:8080
-      HEADLESS: "true"
-      WORKERS: "4"
-    volumes:
-      - ./tests/e2e/results:/app/test-results
-      - ./tests/e2e/playwright-report:/app/playwright-report
-    command: ["npx", "playwright", "test"]
-
   # Performance test runner (k6)
   k6:
     image: grafana/k6:latest

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BetterPrompts is a Prompt Engineering Assistant project designed to democratize advanced prompt engineering techniques for non-technical users. The system analyzes natural language input and automatically suggests or applies optimal prompting strategies (Chain of Thought, Tree of Thoughts, Few-shot learning, etc.) without requiring users to understand the underlying techniques.
+BetterPrompts is an API-based Prompt Engineering Service designed to democratize advanced prompt engineering techniques through a REST API. The system analyzes natural language input and automatically applies optimal prompting strategies (Chain of Thought, Tree of Thoughts, Few-shot learning, etc.) via simple API calls, making it easy to integrate into any application.
 
 ## Project Status
 
@@ -24,7 +24,6 @@ BetterPrompts/
 │       ├── intent-classifier/ # Python/FastAPI ML service (structure only)
 │       ├── technique-selector/# Go/Gin technique selection (100% complete)
 │       └── prompt-generator/  # Python/FastAPI generation (structure only)
-├── frontend/                  # Next.js UI application (70% complete)
 ├── ml-pipeline/              # ML training infrastructure
 │   ├── configs/              # Training configurations
 │   ├── data/                 # Data processing pipelines
@@ -37,7 +36,6 @@ BetterPrompts/
 │       ├── monitoring/       # Prometheus/Grafana setup
 │       └── gateway/          # API gateway configs
 ├── docker/                   # Docker configurations for all services
-│   ├── frontend/            # Next.js Dockerfile
 │   ├── backend/             # Service-specific Dockerfiles
 │   └── nginx/               # Reverse proxy configuration
 ├── planning/                 # Architecture and design documents
@@ -51,7 +49,6 @@ BetterPrompts/
 ## Key Architecture Decisions
 
 ### Technology Stack
-- **Frontend**: Next.js 14+ with TypeScript, React 18+, Tailwind CSS, Shadcn/ui
 - **Backend Services**:
   - API Gateway: Go 1.23+ with Gin (JWT auth, rate limiting, CORS)
   - Intent Classification Service: Python 3.11+ with FastAPI
@@ -71,7 +68,7 @@ BetterPrompts/
 1. **Intent Classification Engine**: Analyzes user input to identify task type and complexity
 2. **Technique Selection Engine**: Matches intents to optimal prompt engineering techniques
 3. **Prompt Generation Service**: Applies techniques to generate enhanced prompts
-4. **User Interface**: Simple input with technique suggestions and educational tooltips
+4. **API Interface**: RESTful endpoints with comprehensive documentation and examples
 5. **Learning Component**: Tracks technique effectiveness and personalizes recommendations
 
 ## Development Commands
@@ -103,7 +100,6 @@ docker compose ps
 docker compose logs -f [service-name]
 
 # Access services:
-# - Frontend: http://localhost:3000
 # - API Gateway: http://localhost/api/v1
 # - Grafana: http://localhost:3001 (admin/admin)
 # - Prometheus: http://localhost:9090
@@ -124,9 +120,6 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8001
 
 # Frontend (Next.js)
-cd frontend
-npm install
-npm run dev
 
 # ML Pipeline
 cd ml-pipeline
@@ -143,16 +136,11 @@ docker compose -f docker-compose.test.yml up
 cd backend/services/api-gateway
 go test ./...
 
-# Frontend tests
-cd frontend
-npm run test
-npm run test:e2e
 ```
 
 ## Implementation Status
 
 ### ✅ Completed Components (~50%)
-- **Frontend UI**: 70% - All major components built, missing API integration
 - **API Gateway**: 85% - JWT auth, rate limiting, middleware stack complete
 - **Technique Selector**: 100% - Rule-based engine with effectiveness scoring
 - **ML Pipeline**: Training infrastructure with DeBERTa-v3 ready
@@ -165,6 +153,7 @@ npm run test:e2e
 - **Prompt Generation**: Basic structure done, logic implementation needed (20%)
 
 ### 📋 Pending
+- **ML Integration**: Connecting intent classifier to TorchServe (0%)
 - **Testing**: No tests written yet (0% coverage)
 - **Kubernetes**: Application manifests (TorchServe K8s done)
 - **CI/CD**: GitHub Actions pipeline setup

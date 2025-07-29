@@ -19,7 +19,6 @@ services:
       - test-db
       - test-redis
       - api-gateway-test
-      - frontend-test
 
   # Test database with security configurations
   test-db:
@@ -94,25 +93,6 @@ services:
     volumes:
       - ./tests/security/certs:/app/certs:ro
 
-  # Frontend for security testing
-  frontend-test:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      target: test
-    container_name: frontend-security-test
-    environment:
-      - NODE_ENV=test
-      - NEXT_PUBLIC_API_URL=http://api-gateway-test:8080
-      - NEXT_PUBLIC_ENABLE_CSP=true
-      - NEXT_PUBLIC_ENABLE_SECURITY_HEADERS=true
-    ports:
-      - "3000:3000"
-    networks:
-      - security-test-net
-    depends_on:
-      - api-gateway-test
-
   # OWASP ZAP for dynamic security testing
   zap:
     image: owasp/zap2docker-stable
@@ -160,7 +140,6 @@ services:
     container_name: security-test-orchestrator
     environment:
       - API_URL=http://api-gateway-test:8080
-      - FRONTEND_URL=http://frontend-test:3000
       - ZAP_URL=http://zap:8090
       - TRIVY_URL=http://trivy:8091
     networks:
@@ -170,7 +149,6 @@ services:
       - ./tests/security/scripts:/scripts:ro
     depends_on:
       - api-gateway-test
-      - frontend-test
       - zap
       - trivy
     command: >

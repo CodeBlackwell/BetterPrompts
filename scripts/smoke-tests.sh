@@ -15,7 +15,6 @@ NC='\033[0m'
 
 # Configuration
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BASE_URL="${BASE_URL:-http://localhost}"
 API_BASE_URL="${API_BASE_URL:-http://localhost/api/v1}"
 TEST_LOG="${PROJECT_ROOT}/smoke-tests-$(date +%Y%m%d-%H%M%S).log"
 TOTAL_TESTS=0
@@ -99,13 +98,6 @@ run_test() {
     fi
 }
 
-# Test: Check if frontend is accessible
-test_frontend_health() {
-    local response=$(make_request "GET" "${BASE_URL}")
-    local http_code=$(echo "${response}" | cut -d'|' -f1)
-    
-    [ "${http_code}" = "200" ]
-}
 
 # Test: Check API health endpoint
 test_api_health() {
@@ -247,7 +239,6 @@ generate_test_report() {
 
 **Test Date**: $(date)  
 **Environment**: Staging  
-**Base URL**: ${BASE_URL}  
 **API URL**: ${API_BASE_URL}
 
 ## Test Summary
@@ -261,7 +252,6 @@ generate_test_report() {
 
 | Test | Result | Description |
 |------|--------|-------------|
-| Frontend Health | $([ ${test_frontend_health_result:-1} -eq 0 ] && echo "✅ Pass" || echo "❌ Fail") | Frontend accessibility |
 | API Health | $([ ${test_api_health_result:-1} -eq 0 ] && echo "✅ Pass" || echo "❌ Fail") | Main API health endpoint |
 | Service Health | $([ ${test_service_health_result:-1} -eq 0 ] && echo "✅ Pass" || echo "❌ Fail") | Individual service health |
 | User Registration | $([ ${test_user_registration_result:-1} -eq 0 ] && echo "✅ Pass" || echo "❌ Fail") | User account creation |
@@ -308,9 +298,6 @@ main() {
     echo "===================="
     
     # Infrastructure tests
-    run_test "Frontend Health" test_frontend_health
-    test_frontend_health_result=$?
-    
     run_test "API Health" test_api_health
     test_api_health_result=$?
     

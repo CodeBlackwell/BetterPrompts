@@ -77,7 +77,7 @@ validate_compose() {
         
         # Check for required services
         services=$(docker compose -f "$1" config --services)
-        required_services=("frontend" "intent-classifier" "technique-selector" "prompt-generator" "nginx" "postgres" "redis")
+        required_services=("api-gateway" "intent-classifier" "technique-selector" "prompt-generator" "nginx" "postgres" "redis")
         
         for service in "${required_services[@]}"; do
             if echo "$services" | grep -q "^$service$"; then
@@ -93,8 +93,7 @@ validate_compose() {
 echo "🏗️  Checking Docker configuration structure..."
 
 # Check directory structure
-check_file "docker/frontend/Dockerfile"
-check_file "docker/frontend/.dockerignore"
+# Frontend files removed - API only
 check_file "docker/backend/intent-classifier/Dockerfile"
 check_file "docker/backend/intent-classifier/.dockerignore"
 check_file "docker/backend/technique-selector/Dockerfile"
@@ -111,7 +110,7 @@ check_file ".env.example"
 echo -e "\n🐳 Validating Dockerfiles..."
 
 # Validate each Dockerfile
-validate_dockerfile "docker/frontend/Dockerfile"
+# Frontend dockerfile removed - API only
 validate_dockerfile "docker/backend/intent-classifier/Dockerfile"
 validate_dockerfile "docker/backend/technique-selector/Dockerfile"
 validate_dockerfile "docker/backend/prompt-generator/Dockerfile"

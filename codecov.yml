@@ -50,7 +50,6 @@ ignore:
   - "**/mock*"
   - "**/vendor/**"
   - "**/node_modules/**"
-  - "**/.next/**"
   - "**/coverage/**"
   - "**/dist/**"
   - "**/build/**"
@@ -72,10 +71,6 @@ flags:
       - backend/services/prompt-generator/
     carryforward: true
     
-  frontend:
-    paths:
-      - frontend/
-    carryforward: true
 
 # Service-specific configurations
 component_management:
@@ -106,7 +101,3 @@ component_management:
         - backend/services/prompt-generator/**
       target: 85%
       
-    - name: frontend
-      paths:
-        - frontend/**
-      target: 80%

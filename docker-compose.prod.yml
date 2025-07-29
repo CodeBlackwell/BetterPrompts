@@ -1,33 +1,4 @@
 services:
-  # Frontend Service - Production
-  frontend:
-    image: ${DOCKER_REGISTRY}/betterprompts/frontend:${VERSION:-latest}
-    container_name: betterprompts-frontend
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=${API_URL}
-    networks:
-      - betterprompts-network
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-      resources:
-        limits:
-          cpus: '1'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
   # Intent Classification Service - Production
   intent-classifier:
     image: ${DOCKER_REGISTRY}/betterprompts/intent-classifier:${VERSION:-latest}
