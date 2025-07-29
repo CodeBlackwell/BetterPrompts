@@ -1,306 +1,298 @@
-# 🚀 BetterPrompts API - Intelligent Prompt Enhancement Service
+# 🚀 BetterPrompts API
 
 <div align="center">
 
-![BetterPrompts API](https://img.shields.io/badge/BetterPrompts_API-v1.0-blue?style=for-the-badge&logo=openai)
+![BetterPrompts API](https://img.shields.io/badge/BetterPrompts_API-v2.0-blue?style=for-the-badge&logo=openai)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](docker-compose.yml)
-[![API Docs](https://img.shields.io/badge/API-Docs-orange?style=for-the-badge&logo=swagger)](http://localhost/docs)
+[![Go](https://img.shields.io/badge/Go-1.23-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
 
-**Transform any prompt into an AI-optimized version with a simple API call**
+**Transform any prompt into an AI-optimized version through a powerful REST API**
 
-[📖 API Documentation](./API_USAGE.md) • [🐛 Report Bug](https://github.com/CodeBlackwell/BetterPrompts/issues) • [✨ Request Feature](https://github.com/CodeBlackwell/BetterPrompts/issues)
+[📖 API Documentation](./API_USAGE.md) • [🚀 Quick Start](#-quick-start) • [💡 Examples](./examples/) • [🐛 Issues](https://github.com/CodeBlackwell/BetterPrompts/issues)
 
 </div>
 
 ---
 
-## 🎯 What is BetterPrompts API?
+## 🎯 Overview
 
-BetterPrompts API is a microservices-based REST API that automatically enhances prompts using advanced prompt engineering techniques. It analyzes user input, identifies intent and complexity, then applies optimal techniques like Chain of Thought, Few-Shot Learning, and more.
+BetterPrompts is a sophisticated prompt engineering API that automatically enhances user inputs using advanced techniques like Chain of Thought, Few-Shot Learning, and Tree of Thoughts. Built with a microservices architecture, it delivers enterprise-grade performance while maintaining simplicity.
 
-### ✨ Key Features
+### Why BetterPrompts?
 
-- **🧠 Intelligent Analysis** - Automatically detects prompt intent and complexity
-- **🔧 12+ Techniques** - From simple step-by-step to advanced Tree of Thoughts
-- **⚡ Fast Response** - <200ms average response time
-- **🔒 Secure** - JWT authentication, rate limiting, and API key support
-- **📊 Production Ready** - Docker, monitoring, 99.9% uptime design
-- **🌐 Language Agnostic** - REST API works with any programming language
+- **🧠 12+ Prompt Engineering Techniques** - Automatically applied based on intent analysis
+- **⚡ Lightning Fast** - <200ms response time with intelligent caching
+- **🔧 Simple Integration** - RESTful API works with any programming language
+- **📈 Production Ready** - Built for scale with monitoring, rate limiting, and 99.9% uptime
+- **🔒 Enterprise Security** - JWT auth, API keys, rate limiting, and input validation
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone and Setup
+Get up and running in under 5 minutes:
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/CodeBlackwell/BetterPrompts.git
 cd BetterPrompts
 
-# Copy environment configuration
+# 2. Set up environment
 cp .env.example .env
+# Edit .env and add your OPENAI_API_KEY or ANTHROPIC_API_KEY
 
-# Edit .env with your API keys
-# Required: OPENAI_API_KEY or ANTHROPIC_API_KEY
-```
-
-### 2. Start the API
-
-```bash
-# Start all services
+# 3. Start the services
 docker compose up -d
 
-# Verify health
-curl http://localhost/health
-```
-
-### 3. Make Your First Request
-
-```bash
+# 4. Test the API
 curl -X POST http://localhost/api/v1/enhance \
   -H "Content-Type: application/json" \
-  -d '{
-    "text": "Explain machine learning to a beginner"
-  }'
+  -d '{"text": "Explain quantum computing"}'
 ```
+
+That's it! Your prompt enhancement API is now running at `http://localhost/api/v1`
 
 ---
 
-## 📚 API Endpoints
+## 📡 API Overview
 
-### Core Endpoints
+### Core Enhancement Endpoint
 
-| Endpoint | Method | Description | Auth Required |
-|----------|--------|-------------|---------------|
-| `/api/v1/enhance` | POST | Enhance a prompt with AI techniques | No |
-| `/api/v1/analyze` | POST | Analyze prompt intent without enhancement | No |
-| `/api/v1/techniques` | GET | List available techniques | No |
-| `/api/v1/history` | GET | Get enhancement history | Yes |
-| `/api/v1/feedback` | POST | Submit feedback on enhancements | Yes |
+**POST** `/api/v1/enhance`
 
-### Authentication Endpoints
+```json
+{
+  "text": "Help me understand machine learning",
+  "prefer_techniques": ["step_by_step", "analogical"],
+  "context": {
+    "audience": "beginner",
+    "domain": "education"
+  }
+}
+```
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/auth/register` | POST | Create new account |
-| `/api/v1/auth/login` | POST | Login and get JWT token |
-| `/api/v1/auth/refresh` | POST | Refresh JWT token |
+**Response:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716",
+  "original_text": "Help me understand machine learning",
+  "enhanced_text": "I'll explain machine learning step-by-step using simple analogies...",
+  "techniques_used": ["step_by_step", "analogical", "structured_output"],
+  "intent": "education",
+  "confidence": 0.95,
+  "processing_time_ms": 187
+}
+```
+
+### Available Endpoints
+
+| Endpoint | Method | Description | Auth |
+|----------|--------|-------------|------|
+| `/api/v1/enhance` | POST | Enhance a prompt with AI techniques | Optional |
+| `/api/v1/analyze` | POST | Analyze prompt intent without enhancement | Optional |
+| `/api/v1/techniques` | GET | List all available techniques | No |
+| `/api/v1/history` | GET | Get your enhancement history | Required |
+| `/api/v1/feedback` | POST | Submit feedback on enhancements | Required |
 
 [📖 Full API Documentation](./API_USAGE.md)
 
 ---
 
-## 💻 Usage Examples
+## 💡 Usage Examples
 
 ### Python
-
 ```python
 import requests
 
-# Enhance a prompt
 response = requests.post(
     "http://localhost/api/v1/enhance",
-    json={
-        "text": "Help me understand recursion",
-        "prefer_techniques": ["step_by_step", "visual_thinking"]
-    }
+    json={"text": "Create a marketing strategy for a startup"}
 )
-
-result = response.json()
-print(f"Enhanced: {result['enhanced_text']}")
-print(f"Techniques used: {result['techniques_used']}")
+enhanced = response.json()
+print(enhanced["enhanced_text"])
 ```
 
 ### JavaScript
-
 ```javascript
-const response = await fetch('http://localhost/api/v1/enhance', {
+const result = await fetch('http://localhost/api/v1/enhance', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    text: 'Explain blockchain technology',
-    context: { audience: 'business_executives' }
+    text: 'Debug this code error',
+    context: { language: 'python' }
   })
-});
-
-const result = await response.json();
-console.log(`Enhanced: ${result.enhanced_text}`);
+}).then(r => r.json());
 ```
 
 ### cURL
-
 ```bash
-# Basic enhancement
 curl -X POST http://localhost/api/v1/enhance \
   -H "Content-Type: application/json" \
-  -d '{"text": "Write a Python function to sort a list"}'
-
-# With authentication
-curl -X POST http://localhost/api/v1/enhance \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Analyze customer churn data"}'
+  -d '{"text": "Write unit tests for a REST API"}'
 ```
 
-[More examples in /examples](./examples/)
+[More examples →](./examples/)
 
 ---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────┐
-│   Client Apps       │
-│ (Your Application)  │
-└──────────┬──────────┘
-           │ REST API
-           ▼
-┌─────────────────────┐
-│   API Gateway       │ :8090
-│  (Go + Gin)         │
-└──────────┬──────────┘
-           │
-     ┌─────┴─────┬─────────────┐
-     ▼           ▼             ▼
-┌─────────┐ ┌─────────┐ ┌─────────┐
-│ Intent  │ │Technique│ │ Prompt  │
-│Classifier│ │Selector │ │Generator│
-│(Python) │ │  (Go)   │ │(Python) │
-└─────────┘ └─────────┘ └─────────┘
-     │           │             │
-     └─────┬─────┴─────────────┘
-           ▼
-    ┌─────────────┐
-    │  PostgreSQL │
-    │    Redis    │
-    └─────────────┘
+<div align="center">
+
+```mermaid
+graph TB
+    Client[Client Applications] --> Gateway[API Gateway<br/>Go + Gin]
+    Gateway --> Intent[Intent Classifier<br/>Python + ML]
+    Gateway --> Tech[Technique Selector<br/>Go + Rules Engine]
+    Gateway --> Gen[Prompt Generator<br/>Python + LLMs]
+    
+    Intent --> DB[(PostgreSQL)]
+    Tech --> DB
+    Gen --> DB
+    
+    Intent --> Cache[(Redis)]
+    Tech --> Cache
+    Gen --> Cache
+    
+    Gateway --> Monitor[Prometheus<br/>+ Grafana]
 ```
 
-### Technology Stack
+</div>
 
-- **API Gateway**: Go 1.23 + Gin framework
-- **ML Services**: Python 3.11 + FastAPI + PyTorch
-- **Database**: PostgreSQL 16 + Redis 7
-- **Deployment**: Docker + Docker Compose
+### Tech Stack
+
+- **Backend Services**: Go (Gin) + Python (FastAPI)
+- **ML/AI**: PyTorch, Transformers, DeBERTa-v3
+- **Databases**: PostgreSQL 16, Redis 7
+- **Infrastructure**: Docker, Kubernetes-ready
 - **Monitoring**: Prometheus + Grafana
+- **LLM Providers**: OpenAI, Anthropic
+
+---
+
+## 🔧 Prompt Engineering Techniques
+
+Our API intelligently selects and applies techniques based on your prompt:
+
+| Technique | Best For | Example Use Case |
+|-----------|----------|------------------|
+| **Chain of Thought** | Complex reasoning | Problem solving, analysis |
+| **Few-Shot Learning** | Pattern matching | Code generation, formatting |
+| **Step-by-Step** | Educational content | Tutorials, explanations |
+| **Tree of Thoughts** | Decision making | Strategy, planning |
+| **Role Playing** | Creative tasks | Writing, brainstorming |
+| **Structured Output** | Data organization | Reports, summaries |
+| **Analogical Reasoning** | Concept explanation | Teaching complex topics |
+| **Constraint Setting** | Focused results | Specific requirements |
+| **Meta Prompting** | Self-improvement | Prompt optimization |
+| **Emotional Appeals** | Persuasive content | Marketing, storytelling |
+| **Socratic Method** | Critical thinking | Education, coaching |
+| **Recursive Refinement** | Quality improvement | Writing, code review |
 
 ---
 
 ## ⚙️ Configuration
 
-### Environment Variables
+### Essential Environment Variables
 
 ```bash
-# Core Settings
-PORT=8090
-LOG_LEVEL=INFO
-
-# Database
-DATABASE_URL=postgresql://user:pass@postgres:5432/betterprompts
-REDIS_URL=redis://redis:6379/0
-
-# Authentication
-JWT_SECRET=your-secret-key
-API_KEY_ENABLED=true  # Enable API key auth
-
 # LLM Providers (at least one required)
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 
-# Rate Limiting
+# Security
+JWT_SECRET=your-secret-key
+API_KEY_ENABLED=false  # Set to true for API key auth
+
+# Performance
 RATE_LIMIT_REQUESTS_PER_MINUTE=60
+CACHE_TTL=3600
 ```
 
-### Advanced Configuration
+### Production Deployment
 
-- **Horizontal Scaling**: Run multiple instances behind a load balancer
-- **Caching**: Redis caches results for improved performance
-- **Monitoring**: Prometheus metrics available at `/metrics`
-- **Custom Models**: Configure different LLM providers and models
+```bash
+# Using Docker Compose
+docker compose -f docker-compose.prod.yml up -d
+
+# Using Kubernetes
+kubectl apply -f k8s/
+
+# Cloud Deployments
+# - AWS ECS/EKS
+# - Google Cloud Run
+# - Azure Container Instances
+# - Heroku Container Registry
+```
 
 ---
 
-## 📊 Performance
+## 📊 Performance & Monitoring
 
 - **Response Time**: p95 < 200ms
 - **Throughput**: 1000+ requests/second
-- **Availability**: 99.9% uptime design
-- **Caching**: 1-hour TTL for identical requests
+- **Availability**: 99.9% uptime SLA
+- **Caching**: Intelligent caching with Redis
+- **Metrics**: Prometheus endpoint at `/metrics`
+- **Dashboards**: Pre-configured Grafana dashboards
 
 ---
 
-## 🔒 Security
+## 🔒 Security Features
 
 - **Authentication**: JWT tokens or API keys
-- **Rate Limiting**: Configurable per-client limits
-- **Input Validation**: Max 5000 characters per prompt
-- **HTTPS**: SSL/TLS support in production
+- **Rate Limiting**: Configurable per IP/user
+- **Input Validation**: Strict validation and sanitization
+- **HTTPS**: TLS support for production
 - **CORS**: Configurable cross-origin policies
-
----
-
-## 🚀 Deployment
-
-### Production with Docker
-
-```bash
-# Use production compose file
-docker compose -f docker-compose.prod.yml up -d
-
-# Or deploy to Kubernetes
-kubectl apply -f k8s/
-```
-
-### Cloud Deployment
-
-- **AWS**: ECS, EKS, or EC2 with Docker
-- **Google Cloud**: Cloud Run or GKE
-- **Azure**: Container Instances or AKS
-- **Heroku**: Container deployment ready
+- **Audit Logging**: Complete request/response logging
 
 ---
 
 ## 🧪 Testing
 
 ```bash
-# Run unit tests
+# Run all tests
 docker compose -f docker-compose.test.yml up
 
-# API integration tests
-python tests/api_integration_test.py
+# Unit tests
+cd backend/services/api-gateway && go test ./...
+
+# Integration tests
+python tests/integration/test_api.py
 
 # Load testing
-k6 run tests/load_test.js
+k6 run tests/performance/load_test.js
 ```
-
----
-
-## 📚 Documentation
-
-- [API Usage Guide](./API_USAGE.md) - Complete endpoint documentation
-- [API Client Examples](./examples/) - Sample code in multiple languages
-- [Architecture Docs](./docs/ARCHITECTURE.md) - System design details
-- [Deployment Guide](./docs/DEPLOYMENT.md) - Production deployment
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Development Setup
 
 ```bash
-# API Gateway
-cd backend/services/api-gateway
-go run main.go
+# Backend services
+cd backend/services/api-gateway && go run main.go
+cd backend/services/intent-classifier && uvicorn app.main:app --reload
 
-# Intent Classifier
-cd backend/services/intent-classifier
-python -m uvicorn app.main:app --reload
+# With hot reload
+docker compose -f docker-compose.dev.yml up
 ```
+
+---
+
+## 📚 Resources
+
+- [API Documentation](./API_USAGE.md) - Complete API reference
+- [Architecture Guide](./docs/ARCHITECTURE.md) - System design details
+- [Deployment Guide](./docs/DEPLOYMENT.md) - Production deployment
+- [Client Examples](./examples/) - Python, JS, Go, Java examples
+- [Troubleshooting](./docs/TROUBLESHOOTING.md) - Common issues
 
 ---
 
@@ -310,18 +302,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
-
-- OpenAI and Anthropic for LLM APIs
-- The prompt engineering community for technique research
-- All contributors and users of BetterPrompts
-
----
-
 <div align="center">
+
+### 🌟 Show Your Support
+
+If you find BetterPrompts useful, please consider giving it a star!
+
+[![GitHub stars](https://img.shields.io/github/stars/CodeBlackwell/BetterPrompts?style=social)](https://github.com/CodeBlackwell/BetterPrompts/stargazers)
 
 **Built with ❤️ by the BetterPrompts Team**
 
-[⭐ Star us on GitHub](https://github.com/CodeBlackwell/BetterPrompts)
+[Website](https://betterprompts.ai) • [Twitter](https://twitter.com/betterprompts) • [Discord](https://discord.gg/betterprompts)
 
 </div>
