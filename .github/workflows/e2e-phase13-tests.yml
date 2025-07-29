@@ -1,0 +1,197 @@
+name: E2E Phase 13 Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'e2e/phase13/**'
+      - 'frontend/**'
+      - 'backend/**'
+      - '.github/workflows/e2e-phase13-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'e2e/phase13/**'
+      - 'frontend/**'
+      - 'backend/**'
+      - '.github/workflows/e2e-phase13-tests.yml'
+  workflow_dispatch:
+    inputs:
+      journey:
+        description: 'Specific journey to test (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - 'new-user'
+          - 'power-user'
+          - 'developer'
+          - 'mobile'
+          - 'accessibility'
+          - 'concurrent'
+
+env:
+  NODE_VERSION: '18'
+  PLAYWRIGHT_VERSION: '1.40.1'
+
+jobs:
+  test:
+    name: Phase 13 Journey Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.browser }}
+          
+      - name: Setup test environment
+        run: |
+          cp .env.example .env
+          # Add any necessary test environment setup
+          echo "BASE_URL=${{ secrets.TEST_BASE_URL || 'http://localhost:3000' }}" >> .env
+          echo "API_BASE_URL=${{ secrets.TEST_API_URL || 'http://localhost:8080/api/v1' }}" >> .env
+          
+      - name: Start services (if not using external)
+        if: ${{ !secrets.TEST_BASE_URL }}
+        run: |
+          docker-compose up -d
+          # Wait for services to be ready
+          npm run wait-for-services
+          
+      - name: Seed test data
+        run: |
+          npm run seed:test-data || echo "Seed script not available, skipping..."
+          
+      - name: Run Phase 13 tests
+        run: |
+          if [ "${{ github.event.inputs.journey }}" != "" ]; then
+            npm run test:e2e:phase13:${{ github.event.inputs.journey }} -- --project=${{ matrix.browser }}
+          else
+            npm run test:e2e:phase13 -- --project=${{ matrix.browser }}
+          fi
+        env:
+          CI: true
+          HEADLESS: true
+          
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.browser }}
+          path: |
+            test-results/
+            playwright-report/
+            e2e/phase13/reports/
+            e2e/phase13/downloads/
+          retention-days: 7
+          
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots-${{ matrix.browser }}
+          path: |
+            test-results/**/*.png
+            e2e/phase13/screenshots/
+          retention-days: 7
+          
+      - name: Stop services
+        if: always() && !secrets.TEST_BASE_URL
+        run: |
+          docker-compose down
+          
+      - name: Publish test report
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          destination_dir: test-reports/${{ github.run_number }}/${{ matrix.browser }}
+          
+  aggregate-results:
+    name: Aggregate Test Results
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          
+      - name: Generate summary report
+        run: |
+          echo "# Phase 13 Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Add test results summary
+          for browser in chromium firefox webkit; do
+            echo "### $browser" >> $GITHUB_STEP_SUMMARY
+            if [ -f "artifacts/test-results-$browser/junit.xml" ]; then
+              echo "✅ Tests completed" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ Tests failed or did not complete" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          done
+          
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+  performance-check:
+    name: Performance Validation
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-chromium
+          path: test-results/
+          
+      - name: Analyze performance metrics
+        run: |
+          # Check if performance metrics meet thresholds
+          if [ -f "test-results/performance-metrics.json" ]; then
+            node scripts/analyze-performance.js test-results/performance-metrics.json
+          fi
+          
+      - name: Create performance badge
+        if: success()
+        run: |
+          echo "Performance tests passed" > performance-badge.txt

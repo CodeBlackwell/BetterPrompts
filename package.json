@@ -1,0 +1,37 @@
+{
+  "name": "betterprompts-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for BetterPrompts platform",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:e2e": "playwright test e2e/",
+    "test:e2e:phase13": "playwright test e2e/phase13/journeys/*.spec.ts",
+    "test:e2e:phase13:headed": "playwright test e2e/phase13/journeys/*.spec.ts --headed",
+    "test:e2e:phase13:journey": "playwright test e2e/phase13/journeys/",
+    "test:e2e:phase13:new-user": "playwright test e2e/phase13/journeys/new-user-journey.spec.ts",
+    "test:e2e:phase13:power-user": "playwright test e2e/phase13/journeys/power-user-journey.spec.ts",
+    "test:e2e:phase13:developer": "playwright test e2e/phase13/journeys/developer-journey.spec.ts",
+    "test:e2e:phase13:mobile": "playwright test e2e/phase13/journeys/mobile-journey.spec.ts",
+    "test:e2e:phase13:accessibility": "playwright test e2e/phase13/journeys/accessibility-journey.spec.ts",
+    "test:e2e:phase13:concurrent": "playwright test e2e/phase13/journeys/concurrent-journeys.spec.ts",
+    "test:e2e:phase12": "playwright test e2e/phase12/*.spec.ts",
+    "playwright:install": "playwright install",
+    "playwright:install-deps": "playwright install-deps",
+    "report": "playwright show-report",
+    "seed:test-data": "node scripts/seed-test-data.js",
+    "clean:reports": "rm -rf e2e/phase13/reports/* e2e/phase13/downloads/* playwright-report test-results"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

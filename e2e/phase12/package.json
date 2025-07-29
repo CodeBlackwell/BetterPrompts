@@ -1,0 +1,41 @@
+{
+  "name": "phase12-mobile-accessibility-tests",
+  "version": "1.0.0",
+  "description": "Phase 12: Mobile & Accessibility E2E Tests for BetterPrompts",
+  "scripts": {
+    "test": "playwright test",
+    "test:mobile": "playwright test us-019-mobile-experience.spec.ts",
+    "test:a11y": "playwright test us-020-accessibility.spec.ts",
+    "test:combined": "playwright test mobile-a11y-combined.spec.ts",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:trace": "playwright show-trace",
+    "test:mobile-devices": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:all-browsers": "playwright test --project=chromium --project=firefox --project=webkit",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\""
+  },
+  "keywords": [
+    "e2e",
+    "testing",
+    "playwright",
+    "mobile",
+    "accessibility",
+    "wcag",
+    "a11y"
+  ],
+  "devDependencies": {
+    "@axe-core/playwright": "^4.8.3",
+    "@playwright/test": "^1.41.0",
+    "@types/node": "^20.11.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-playwright": "^0.20.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
