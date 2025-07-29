@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-07-29T12:17:35.707Z",
+  "totalTests": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "duration": 0,
+  "vulnerabilities": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "categories": {
+    "sqlInjection": {
+      "total": 0,
+      "passed": 0
+    },
+    "xss": {
+      "total": 0,
+      "passed": 0
+    },
+    "authentication": {
+      "total": 0,
+      "passed": 0
+    },
+    "sessionManagement": {
+      "total": 0,
+      "passed": 0
+    },
+    "encryption": {
+      "total": 0,
+      "passed": 0
+    }
+  }
+}

