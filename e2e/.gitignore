@@ -1,14 +1,9 @@
-# E2E Test artifacts
-frontend/node_modules/
-frontend/playwright-report/
-frontend/test-results/
-frontend/test-results.log
-frontend/*.png
-frontend/*.json
-phase2/
-debug-test.js
+# Dependencies
+node_modules/
+package-lock.json
 
-# Playwright specific
+# Test artifacts
+artifacts/
 test-results/
 playwright-report/
 playwright/.cache/
@@ -16,7 +11,54 @@ videos/
 screenshots/
 traces/
 
-# Test data
+# Screenshots and videos
+*.png
+*.jpg
+*.jpeg
+*.webm
+*.mp4
+
+# Logs
 *.log
+logs/
+
+# Temporary files
 *.tmp
+*.temp
 .DS_Store
+downloads/
+
+# Authentication tokens
+auth-*.json
+*-auth.json
+
+# Environment files
+.env
+.env.*
+
+# Debug files
+debug-*.png
+debug-*.jpg
+test-*.png
+debug-test.js
+
+# Coverage
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+
+# Backup files
+e2e_backup_*.tar.gz
+
+# Phase-specific ignores
+phase2/
+frontend/*.json
+frontend/test-results.log

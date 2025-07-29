@@ -10,3 +10,4 @@ ml-pipeline/data_generation/template_training_data.json filter=lfs diff=lfs merg
 ml-pipeline/data_generation/*.json filter=lfs diff=lfs merge=lfs -text
 backend/services/*/main filter=lfs diff=lfs merge=lfs -text
 *.exe filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
