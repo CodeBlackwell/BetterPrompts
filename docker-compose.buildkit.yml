@@ -1,0 +1,42 @@
+# Docker Compose override for BuildKit optimizations
+# Usage: docker compose -f docker-compose.yml -f docker-compose.buildkit.yml build
+
+# This file enables BuildKit features for faster builds
+# Requires Docker 18.09+ and Docker Compose 1.25.4+
+
+services:
+  api-gateway:
+    build:
+      context: ./backend/services/api-gateway
+      dockerfile: Dockerfile
+      cache_from:
+        - type=registry,ref=betterprompts/api-gateway:buildcache
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    
+  technique-selector:
+    build:
+      context: ./backend/services/technique-selector
+      dockerfile: Dockerfile
+      cache_from:
+        - type=registry,ref=betterprompts/technique-selector:buildcache
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    
+  intent-classifier:
+    build:
+      context: ./backend/services/intent-classifier
+      dockerfile: Dockerfile
+      cache_from:
+        - type=registry,ref=betterprompts/intent-classifier:buildcache
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    
+  prompt-generator:
+    build:
+      context: ./backend/services/prompt-generator
+      dockerfile: Dockerfile
+      cache_from:
+        - type=registry,ref=betterprompts/prompt-generator:buildcache
+      args:
+        BUILDKIT_INLINE_CACHE: 1
