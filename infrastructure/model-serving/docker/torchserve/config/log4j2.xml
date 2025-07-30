@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="log-path">/home/model-server/logs</Property>
+        <Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+    </Properties>
+    
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${pattern}"/>
+            <Filters>
+                <ThresholdFilter level="INFO"/>
+            </Filters>
+        </Console>
+        
+        <!-- Model Server Log -->
+        <RollingFile name="ModelServerLog" fileName="${log-path}/model_server.log"
+                     filePattern="${log-path}/model_server-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${pattern}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+        
+        <!-- Model Log -->
+        <RollingFile name="ModelLog" fileName="${log-path}/model.log"
+                     filePattern="${log-path}/model-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${pattern}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+        
+        <!-- Metrics Log -->
+        <RollingFile name="MetricsLog" fileName="${log-path}/metrics.log"
+                     filePattern="${log-path}/metrics-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${pattern}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="50MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+        
+        <!-- Access Log -->
+        <RollingFile name="AccessLog" fileName="${log-path}/access.log"
+                     filePattern="${log-path}/access-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+    
+    <Loggers>
+        <!-- TorchServe specific loggers -->
+        <Logger name="com.amazonaws.ml.ts" level="INFO" additivity="false">
+            <AppenderRef ref="ModelServerLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <Logger name="com.amazonaws.ml.ts.wlm" level="INFO" additivity="false">
+            <AppenderRef ref="ModelLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <Logger name="com.amazonaws.ml.ts.metrics" level="INFO" additivity="false">
+            <AppenderRef ref="MetricsLog"/>
+        </Logger>
+        
+        <Logger name="com.amazonaws.ml.ts.access_log" level="INFO" additivity="false">
+            <AppenderRef ref="AccessLog"/>
+        </Logger>
+        
+        <!-- Python handler logs -->
+        <Logger name="ts_metrics" level="INFO" additivity="false">
+            <AppenderRef ref="MetricsLog"/>
+        </Logger>
+        
+        <Logger name="ts_handler" level="INFO" additivity="false">
+            <AppenderRef ref="ModelLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <!-- BetterPrompts custom handlers -->
+        <Logger name="intent_classifier_handler" level="DEBUG" additivity="false">
+            <AppenderRef ref="ModelLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <Logger name="base_handler" level="INFO" additivity="false">
+            <AppenderRef ref="ModelLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <!-- Root Logger -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ModelServerLog"/>
+        </Root>
+    </Loggers>
+</Configuration>

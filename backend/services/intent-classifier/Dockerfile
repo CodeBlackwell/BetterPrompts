@@ -1,8 +1,11 @@
+# syntax=docker/dockerfile:1
 # Multi-stage build for optimized ML image
 FROM python:3.11-slim as builder
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
+# Install build dependencies with cache mount
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     curl \
@@ -14,24 +17,33 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies in a virtual environment
+# Install Python dependencies with cache mounts
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Upgrade pip and install wheel for faster builds
-RUN pip install --upgrade pip wheel
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip wheel setuptools
 
-# Install ML dependencies with optimizations
-# Use CPU-only torch to reduce size (remove if GPU needed)
-RUN pip install torch==2.1.1 --index-url https://download.pytorch.org/whl/cpu \
-    && pip install transformers==4.36.0 \
-    && pip install --no-cache-dir -r requirements.txt
+# Install ML dependencies with cache mounts
+RUN --mount=type=cache,target=/root/.cache/pip \
+    --mount=type=bind,source=requirements.txt,target=/tmp/requirements.txt \
+    pip install torch==2.1.1 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install transformers==4.36.0 && \
+    pip install -r /tmp/requirements.txt
 
 # Production stage
 FROM python:3.11-slim
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+# Labels for better image management
+LABEL maintainer="betterprompts-team"
+LABEL version="1.0.0"
+LABEL description="BetterPrompts Intent Classifier Service"
+
+# Install runtime dependencies with cache mount
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -48,15 +60,13 @@ ENV TRANSFORMERS_CACHE="/app/.cache/huggingface"
 # Set working directory
 WORKDIR /app
 
-# Create cache directory for transformers
-RUN mkdir -p /app/.cache/huggingface
+# Copy application code first
+COPY --chown=1000:1000 . .
 
-# Copy application code
-COPY . .
-
-# Create non-root user
-RUN useradd -m -u 1000 appuser \
-    && chown -R appuser:appuser /app
+# Create cache directory and non-root user in single layer
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app/.cache/huggingface && \
+    chown -R appuser:appuser /app /app/.cache
 
 # Switch to non-root user
 USER appuser
@@ -68,5 +78,5 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
+# Run the application with optimized settings
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2", "--loop", "uvloop"]

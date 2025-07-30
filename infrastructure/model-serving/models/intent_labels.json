@@ -1,0 +1,12 @@
+{
+  "0": "question_answering",
+  "1": "code_generation",
+  "2": "creative_writing",
+  "3": "analysis",
+  "4": "conversation",
+  "5": "task_planning",
+  "6": "education",
+  "7": "debugging",
+  "8": "translation",
+  "9": "summarization"
+}

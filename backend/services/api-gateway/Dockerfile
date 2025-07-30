@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Build stage
 FROM golang:1.23-alpine AS builder
 
@@ -7,46 +8,47 @@ RUN apk add --no-cache git gcc musl-dev
 # Set working directory
 WORKDIR /app
 
-# Copy go mod files
+# Configure Go proxy and increase timeout
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV GOTIMEOUT=120
+
+# Copy go mod files first for better caching
 COPY go.mod go.sum ./
-RUN go mod download
+
+# Download dependencies with cache mount
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
 
 # Copy source code
 COPY . .
 
-# Ensure all dependencies are properly resolved
-RUN go mod tidy
+# Build with cache mounts for faster rebuilds
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags='-w -s' -a -o api-gateway ./cmd/server
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o api-gateway ./cmd/server
+# Final stage - use distroless for smaller size and better security
+FROM gcr.io/distroless/static-debian12:nonroot
 
-# Final stage
-FROM alpine:3.19
-
-# Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates
-
-# Create non-root user
-RUN addgroup -g 1000 -S appgroup && \
-    adduser -u 1000 -S appuser -G appgroup
+# Labels for better image management
+LABEL maintainer="betterprompts-team"
+LABEL version="1.0.0"
+LABEL description="BetterPrompts API Gateway Service"
 
 WORKDIR /app
 
-# Copy binary from builder
-COPY --from=builder /app/api-gateway .
+# Copy binary from builder with specific permissions
+COPY --from=builder --chown=65532:65532 /app/api-gateway /app/api-gateway
 
-# Change ownership
-RUN chown -R appuser:appgroup /app
-
-# Switch to non-root user
-USER appuser
+# Use numeric UID for distroless
+USER 65532
 
 # Expose port
 EXPOSE 8090
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8090/api/v1/health || exit 1
+# Note: Health checks should be implemented at orchestration level for distroless images
 
 # Run the application
-CMD ["./api-gateway"]
+ENTRYPOINT ["/app/api-gateway"]

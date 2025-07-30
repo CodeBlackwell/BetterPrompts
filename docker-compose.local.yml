@@ -1,3 +1,6 @@
+# Docker Compose configuration for local development
+# This version runs without TorchServe for faster local development
+
 services:
   # API Gateway - Main entry point for all API requests
   api-gateway:
@@ -39,7 +42,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Intent Classification Service
+  # Intent Classification Service (without TorchServe)
   intent-classifier:
     build:
       context: ./backend/services/intent-classifier
@@ -53,20 +56,19 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MODEL_NAME=microsoft/deberta-v3-base
       - LOG_LEVEL=DEBUG
-      - USE_TORCHSERVE=true
-      - TORCHSERVE_HOST=torchserve
-      - TORCHSERVE_PORT=8080
+      - USE_TORCHSERVE=false  # Disabled for local development
       - PYTHONPATH=/app
+      - ENABLE_ADAPTIVE_ROUTING=true
+      - ENABLE_ZERO_SHOT=true
     volumes:
       - ./backend/services/intent-classifier:/app
-      - intent-models:/app/models
+      - ./ml-pipeline/trained_models:/app/models  # Mount trained models directly
       - ml-cache:/app/cache
     networks:
       - betterprompts-network
     depends_on:
       - postgres
       - redis
-      - torchserve
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
@@ -190,37 +192,6 @@ services:
       timeout: 5s
       retries: 3
 
-  # ML Model Serving with TorchServe (Optional for development)
-  torchserve:
-    build:
-      context: ./infrastructure/model-serving/docker
-      dockerfile: Dockerfile.torchserve
-    container_name: betterprompts-torchserve
-    ports:
-      - "8080:8080"      # Inference API
-      - "8081:8081"      # Management API
-      - "8082:8082"      # Metrics API
-    environment:
-      - MODEL_STORE=/models
-      - LOG_LEVEL=DEBUG
-      - MAX_WORKERS=2
-    volumes:
-      - ./infrastructure/model-serving/models:/models
-      - ./infrastructure/model-serving/config:/config
-    networks:
-      - betterprompts-network
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 2G
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   # Prometheus for monitoring
   prometheus:
     image: prom/prometheus:latest
@@ -268,7 +239,6 @@ volumes:
   redis-data:
   prometheus-data:
   grafana-data:
-  intent-models:
   prompt-models:
   ml-cache:
   go-cache:
